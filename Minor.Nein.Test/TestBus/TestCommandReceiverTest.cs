@@ -36,14 +36,8 @@
             var context = new TestBusContext();
             ICommandReceiver receiver = context.CreateCommandReceiver("queue");
             receiver.DeclareCommandQueue();
-            receiver.StartReceivingCommands(cm =>
-            {
-                return cm;
-            });
-            Assert.ThrowsException<BusConfigurationException>(() => receiver.StartReceivingCommands(cm =>
-            {
-                return cm;
-            }));
+            receiver.StartReceivingCommands(cm => cm);
+            Assert.ThrowsException<BusConfigurationException>(() => receiver.StartReceivingCommands(cm => cm));
         }
 
         [TestMethod]
