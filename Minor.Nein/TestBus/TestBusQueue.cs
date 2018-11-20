@@ -1,11 +1,11 @@
-﻿using System.Collections.Generic;
-
-namespace Minor.Nein.TestBus
+﻿namespace Minor.Nein.TestBus
 {
+    using System.Collections.Generic;
+
     public class TestBusQueue
     {
-        public Queue<IEventMessage> Queue { get; }
         public IEnumerable<string> TopicExpressions;
+        public Queue<IEventMessage> Queue { get; }
 
         public TestBusQueue(IEnumerable<string> topicExpressions)
         {

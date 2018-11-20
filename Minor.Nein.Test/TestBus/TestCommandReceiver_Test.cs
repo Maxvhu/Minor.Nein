@@ -1,28 +1,19 @@
-﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
-using RabbitMQ.Client.Framing;
-using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
-
-namespace Minor.Nein.TestBus.Test
+﻿namespace Minor.Nein.TestBus.Test
 {
+    using System.Linq;
+    using System.Threading;
+    using System.Threading.Tasks;
+    using Microsoft.VisualStudio.TestTools.UnitTesting;
+    using RabbitMQ.Client.Framing;
+
     [TestClass]
     public class TestCommandReceiver_Test
     {
         [TestMethod]
-        public void TestCommandReceiverCreateTest()
-        {
-            TestBusContext context = new TestBusContext();
-            var target = context.CreateCommandReceiver("queue");
-
-            Assert.AreEqual("queue", target.QueueName);
-        }
-
-        [TestMethod]
         public void DeclareCommandQueueTest()
         {
-            TestBusContext context = new TestBusContext();
-            var target = context.CreateCommandReceiver("queue");
+            var context = new TestBusContext();
+            ICommandReceiver target = context.CreateCommandReceiver("queue");
             target.DeclareCommandQueue();
 
             Assert.AreEqual(1, context.CommandQueues.Count);
@@ -30,21 +21,51 @@ namespace Minor.Nein.TestBus.Test
         }
 
         [TestMethod]
+        public void DeclaringQueueTwiceThrowsException()
+        {
+            var context = new TestBusContext();
+            ICommandReceiver receiver = context.CreateCommandReceiver("queue");
+            receiver.DeclareCommandQueue();
+
+            Assert.ThrowsException<BusConfigurationException>(() => receiver.DeclareCommandQueue());
+        }
+
+        [TestMethod]
+        public void StartListeningTwiceThrowsException()
+        {
+            var context = new TestBusContext();
+            ICommandReceiver receiver = context.CreateCommandReceiver("queue");
+            receiver.DeclareCommandQueue();
+            receiver.StartReceivingCommands(cm =>
+            {
+                return cm;
+            });
+            Assert.ThrowsException<BusConfigurationException>(() => receiver.StartReceivingCommands(cm =>
+            {
+                return cm;
+            }));
+        }
+
+        [TestMethod]
         public void StartReceivingCommandsTest()
         {
-            TestBusContext context = new TestBusContext();
-            var target = context.CreateCommandReceiver("queue");
+            var context = new TestBusContext();
+            ICommandReceiver target = context.CreateCommandReceiver("queue");
             target.DeclareCommandQueue();
             context.DeclareCommandQueue("responseQueue");
             var autoReset = new AutoResetEvent(false);
 
-            target.StartReceivingCommands((cm) =>
+            target.StartReceivingCommands(cm =>
             {
                 autoReset.Set();
                 return cm;
             });
 
-            context.CommandQueues["queue"].Enqueue(new TestBusCommandMessage(new CommandMessage("message", null, null), new BasicProperties() { ReplyTo = "responseQueue" }));
+            context.CommandQueues["queue"].Enqueue(new TestBusCommandMessage(new CommandMessage("message", null, null)
+                  , new BasicProperties
+                    {
+                            ReplyTo = "responseQueue"
+                    }));
 
             bool succes = autoReset.WaitOne(5000);
             Assert.IsTrue(succes);
@@ -54,42 +75,31 @@ namespace Minor.Nein.TestBus.Test
         }
 
         [TestMethod]
-        public void StartListeningTwiceThrowsException()
-        {
-            TestBusContext context = new TestBusContext();
-            var receiver = context.CreateCommandReceiver("queue");
-            receiver.DeclareCommandQueue();
-            receiver.StartReceivingCommands((cm) => { return cm; });
-            Assert.ThrowsException<BusConfigurationException>(() => receiver.StartReceivingCommands((cm) => { return cm; }));
-        }
-
-        [TestMethod]
-        public void DeclaringQueueTwiceThrowsException()
-        {
-            TestBusContext context = new TestBusContext();
-            var receiver = context.CreateCommandReceiver("queue");
-            receiver.DeclareCommandQueue();
-
-            Assert.ThrowsException<BusConfigurationException>(() => receiver.DeclareCommandQueue());
-        }
-
-        [TestMethod]
         public async Task TestBusIntegrationTest()
         {
-            TestBusContext context = new TestBusContext();
-            var sender = context.CreateCommandSender();
-            var receiver = context.CreateCommandReceiver("queue");
+            var context = new TestBusContext();
+            ICommandSender sender = context.CreateCommandSender();
+            ICommandReceiver receiver = context.CreateCommandReceiver("queue");
             receiver.DeclareCommandQueue();
-            receiver.StartReceivingCommands((cm) =>
+            receiver.StartReceivingCommands(cm =>
             {
-                var message = "message2";
+                string message = "message2";
                 return new CommandMessage(message, cm.MessageType, cm.CorrelationId);
             });
 
             var mess = new CommandMessage("message", null, null);
-            var result = await sender.SendCommandAsync(mess, "queue");
+            CommandMessage result = await sender.SendCommandAsync(mess, "queue");
 
             Assert.AreEqual("message2", result.Message);
+        }
+
+        [TestMethod]
+        public void TestCommandReceiverCreateTest()
+        {
+            var context = new TestBusContext();
+            ICommandReceiver target = context.CreateCommandReceiver("queue");
+
+            Assert.AreEqual("queue", target.QueueName);
         }
     }
 }

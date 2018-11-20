@@ -1,15 +1,15 @@
-﻿using RabbitMQ.Client.Framing;
-using System;
-using System.Threading;
-using System.Threading.Tasks;
-
-namespace Minor.Nein.TestBus
+﻿namespace Minor.Nein.TestBus
 {
+    using System;
+    using System.Threading;
+    using System.Threading.Tasks;
+    using RabbitMQ.Client.Framing;
+
     public class TestCommandReceiver : ICommandReceiver
     {
-        private TestBusContext Context { get; }
-        private bool _isListening;
         private bool _isDeclared;
+        private bool _isListening;
+        private TestBusContext Context { get; }
 
         public TestCommandReceiver(TestBusContext context, string queueName)
         {
@@ -36,6 +36,7 @@ namespace Minor.Nein.TestBus
             {
                 throw new BusConfigurationException("Already listening to queuename " + QueueName);
             }
+
             new Task(() =>
             {
                 var queue = Context.CommandQueues[QueueName];
@@ -49,7 +50,7 @@ namespace Minor.Nein.TestBus
                     }
 
                     CommandMessage response = null;
-                    var command = queue.Dequeue();
+                    TestBusCommandMessage command = queue.Dequeue();
 
                     try
                     {
@@ -61,15 +62,13 @@ namespace Minor.Nein.TestBus
                     }
                     finally
                     {
-                        Context.CommandQueues[command.Props.ReplyTo].Enqueue(new TestBusCommandMessage(response,
-                            new BasicProperties()
-                            {
-                                CorrelationId = command.Props.CorrelationId,
-                                Type = command.Props.Type
-                            }));
+                        Context.CommandQueues[command.Props.ReplyTo].Enqueue(new TestBusCommandMessage(response
+                              , new BasicProperties
+                                {
+                                        CorrelationId = command.Props.CorrelationId
+                                      , Type = command.Props.Type
+                                }));
                     }
-
-
                 }
             }).Start();
             _isListening = true;

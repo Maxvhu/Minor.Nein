@@ -1,7 +1,7 @@
-﻿using System.Text.RegularExpressions;
-
-namespace Minor.Nein.TestBus
+﻿namespace Minor.Nein.TestBus
 {
+    using System.Text.RegularExpressions;
+
     public class TestMessageSender : IMessageSender
     {
         public TestBusContext Context { get; }
@@ -15,18 +15,23 @@ namespace Minor.Nein.TestBus
         {
             //casmva.info.bla
             //casmva.#
-            var senderExpression = message.RoutingKey ?? "";
+            string senderExpression = message.RoutingKey ?? "";
 
-            foreach (var testQueue in Context.TestQueues.Values)
+            foreach (TestBusQueue testQueue in Context.TestQueues.Values)
             {
-                foreach (var topicExpression in testQueue.TopicExpressions)
+                foreach (string topicExpression in testQueue.TopicExpressions)
                 {
-                    if (IsTopicMatch(topicExpression, senderExpression)) {                    
+                    if (IsTopicMatch(topicExpression, senderExpression))
+                    {
                         testQueue.Queue.Enqueue(message);
                         break;
                     }
                 }
             }
+        }
+
+        public void Dispose()
+        {
         }
 
         public static bool IsTopicMatch(string s, string matchWith)
@@ -36,10 +41,6 @@ namespace Minor.Nein.TestBus
             var regex = new Regex(regexString);
 
             return regex.IsMatch(matchWith);
-        }
-
-        public void Dispose()
-        {
         }
     }
 }

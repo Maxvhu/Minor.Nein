@@ -1,27 +1,37 @@
-﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
-using System.Linq;
-using System.Threading.Tasks;
-
-namespace Minor.Nein.TestBus.Test
+﻿namespace Minor.Nein.TestBus.Test
 {
+    using System.Linq;
+    using System.Threading.Tasks;
+    using Microsoft.VisualStudio.TestTools.UnitTesting;
+
     [TestClass]
     public class TestCommandSender_Test
     {
         [TestMethod]
         public void CreateTestCommandSenderDeclaresNewQueue()
         {
-            TestBusContext context = new TestBusContext();
-            var sender = context.CreateCommandSender();
+            var context = new TestBusContext();
+            ICommandSender sender = context.CreateCommandSender();
 
             Assert.IsInstanceOfType(typeof(TestCommandSender), sender.GetType().BaseType);
             Assert.AreEqual(1, context.CommandQueues.Count);
         }
 
         [TestMethod]
+        public void GenerateRandomQueueNameTest()
+        {
+            var context = new TestBusContext();
+            var sender = (TestCommandSender) context.CreateCommandSender();
+
+            string result = sender.GenerateRandomQueueName();
+            Assert.AreEqual(30, result.Length);
+        }
+
+        [TestMethod]
         public async Task SendCommandAsync()
         {
-            TestBusContext context = new TestBusContext();
-            var sender = (TestCommandSender)context.CreateCommandSender();
+            var context = new TestBusContext();
+            var sender = (TestCommandSender) context.CreateCommandSender();
 
             var generatedQueue = context.CommandQueues.First().Value;
 
@@ -33,19 +43,9 @@ namespace Minor.Nein.TestBus.Test
 
             generatedQueue.Enqueue(context.CommandQueues["queue"].Dequeue());
 
-            var result = await task;
+            CommandMessage result = await task;
 
             Assert.AreEqual("message", result.Message);
-        }
-
-        [TestMethod]
-        public void GenerateRandomQueueNameTest()
-        {
-            TestBusContext context = new TestBusContext();
-            var sender = (TestCommandSender)context.CreateCommandSender();
-
-            var result = sender.GenerateRandomQueueName();
-            Assert.AreEqual(30, result.Length);
         }
     }
 }

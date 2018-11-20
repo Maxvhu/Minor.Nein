@@ -1,30 +1,16 @@
-﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Minor.Nein.Test;
-using Moq;
-using RabbitMQ.Client;
-using System;
-
-namespace Minor.Nein.RabbitMQBus.Test
+﻿namespace Minor.Nein.RabbitMQBus.Test
 {
+    using System;
+    using Microsoft.VisualStudio.TestTools.UnitTesting;
+    using Moq;
+    using Nein.Test;
+    using RabbitMQ.Client;
+
     [TestClass]
     public class RabbitMQContextBuilder_Test
     {
-        #region WithExchange
-        [TestMethod]
-        public void WithExchange_WithCorrectExchangeName()
-        {
-            // Arrange
-            var contextBuilder = new RabbitMQContextBuilder();
-
-            // Act
-            contextBuilder.WithExchange("AMX");
-
-            // Assert
-            Assert.AreEqual("AMX", contextBuilder.ExchangeName);
-        }
-        #endregion
-
         #region WithAddress
+
         [TestMethod]
         public void WithAddress_WithCorrectHostnameAndPort()
         {
@@ -38,9 +24,11 @@ namespace Minor.Nein.RabbitMQBus.Test
             Assert.AreEqual("localhost", contextBuilder.HostName);
             Assert.AreEqual(9000, contextBuilder.Port);
         }
+
         #endregion
 
         #region WithCredentials
+
         [TestMethod]
         public void WithCredentials_WithCorrectUsernameAndPassword()
         {
@@ -55,9 +43,28 @@ namespace Minor.Nein.RabbitMQBus.Test
             string password = TestHelper.GetPrivateField<string>(contextBuilder, "_password");
             Assert.AreEqual("password", password);
         }
+
+        #endregion
+
+        #region WithExchange
+
+        [TestMethod]
+        public void WithExchange_WithCorrectExchangeName()
+        {
+            // Arrange
+            var contextBuilder = new RabbitMQContextBuilder();
+
+            // Act
+            contextBuilder.WithExchange("AMX");
+
+            // Assert
+            Assert.AreEqual("AMX", contextBuilder.ExchangeName);
+        }
+
         #endregion
 
         #region ReadFromEnvironmentVariables
+
         [TestMethod]
         public void ReadFromEnvironmentVariables_WithCorrectExchangeName()
         {
@@ -161,14 +168,16 @@ namespace Minor.Nein.RabbitMQBus.Test
                 contextBuilder.ReadFromEnvironmentVariables();
             });
         }
+
         #endregion
 
         #region CreateContext
+
         [TestMethod]
         public void CreateContext_WithExchangeNameNull_ThrowsArgumentNullException()
         {
             // Arrange
-            var contextBuilder = new RabbitMQContextBuilder().WithAddress(null, 5672);
+            RabbitMQContextBuilder contextBuilder = new RabbitMQContextBuilder().WithAddress(null, 5672);
 
             // Act & Assert
             Assert.ThrowsException<ArgumentNullException>(() =>
@@ -181,7 +190,7 @@ namespace Minor.Nein.RabbitMQBus.Test
         public void CreateContext_WithExchangeNameEmptyString_ThrowsArgumentException()
         {
             // Arrange
-            var contextBuilder = new RabbitMQContextBuilder().WithAddress("", 5672);
+            RabbitMQContextBuilder contextBuilder = new RabbitMQContextBuilder().WithAddress("", 5672);
 
             // Act & Assert
             var exception = Assert.ThrowsException<ArgumentException>(() =>
@@ -195,7 +204,7 @@ namespace Minor.Nein.RabbitMQBus.Test
         public void CreateContext_WithNegativePort_ThrowsArgumentOutOfRangeException()
         {
             // Arrange
-            var contextBuilder = new RabbitMQContextBuilder().WithAddress("localhost", -1);
+            RabbitMQContextBuilder contextBuilder = new RabbitMQContextBuilder().WithAddress("localhost", -1);
 
             // Act & Assert
             var exception = Assert.ThrowsException<ArgumentOutOfRangeException>(() =>
@@ -209,7 +218,7 @@ namespace Minor.Nein.RabbitMQBus.Test
         public void CreateContext_WithPortHigherThan65535_ThrowsArgumentOutOfRangeException()
         {
             // Arrange
-            var contextBuilder = new RabbitMQContextBuilder().WithAddress("localhost", 65536);
+            RabbitMQContextBuilder contextBuilder = new RabbitMQContextBuilder().WithAddress("localhost", 65536);
 
             // Act & Assert
             var exception = Assert.ThrowsException<ArgumentOutOfRangeException>(() =>
@@ -224,23 +233,16 @@ namespace Minor.Nein.RabbitMQBus.Test
         {
             // Arrange
             var channelMock = new Mock<IModel>();
-            channelMock.Setup(c => c.ExchangeDeclare("Exchange3",
-                                                     "topic",
-                                                     false,
-                                                     false,
-                                                     null))
-                       .Verifiable();
+            channelMock.Setup(c => c.ExchangeDeclare("Exchange3", "topic", false, false, null)).Verifiable();
             var connectionMock = new Mock<IConnection>(MockBehavior.Strict);
-            connectionMock.Setup(c => c.CreateModel())
-                          .Returns(channelMock.Object);
+            connectionMock.Setup(c => c.CreateModel()).Returns(channelMock.Object);
             var connectionFactoryMock = new Mock<IConnectionFactory>(MockBehavior.Strict);
-            connectionFactoryMock.Setup(f => f.CreateConnection())
-                                 .Returns(connectionMock.Object);
-            var contextBuilder = new RabbitMQContextBuilder().WithExchange("Exchange3")
-                                                             .WithAddress("localhost", 5672);
+            connectionFactoryMock.Setup(f => f.CreateConnection()).Returns(connectionMock.Object);
+            RabbitMQContextBuilder contextBuilder = new RabbitMQContextBuilder().WithExchange("Exchange3")
+                                                                                .WithAddress("localhost", 5672);
 
             // Act
-            var context = contextBuilder.CreateContext(connectionFactoryMock.Object);
+            RabbitMQBusContext context = contextBuilder.CreateContext(connectionFactoryMock.Object);
 
             // Assert
             channelMock.VerifyAll();
@@ -252,16 +254,14 @@ namespace Minor.Nein.RabbitMQBus.Test
             // Arrange
             var channelMock = new Mock<IModel>();
             var connectionMock = new Mock<IConnection>(MockBehavior.Strict);
-            connectionMock.Setup(c => c.CreateModel())
-                          .Returns(channelMock.Object);
+            connectionMock.Setup(c => c.CreateModel()).Returns(channelMock.Object);
             var connectionFactoryMock = new Mock<IConnectionFactory>(MockBehavior.Strict);
-            connectionFactoryMock.Setup(f => f.CreateConnection())
-                                 .Returns(connectionMock.Object);
-            var contextBuilder = new RabbitMQContextBuilder().WithExchange("Exchange3")
-                                                             .WithAddress("localhost", 5672);
+            connectionFactoryMock.Setup(f => f.CreateConnection()).Returns(connectionMock.Object);
+            RabbitMQContextBuilder contextBuilder = new RabbitMQContextBuilder().WithExchange("Exchange3")
+                                                                                .WithAddress("localhost", 5672);
 
             // Act
-            var context = contextBuilder.CreateContext(connectionFactoryMock.Object);
+            RabbitMQBusContext context = contextBuilder.CreateContext(connectionFactoryMock.Object);
 
             // Assert
             Assert.AreEqual("Exchange3", context.ExchangeName);
@@ -273,20 +273,19 @@ namespace Minor.Nein.RabbitMQBus.Test
             // Arrange
             var channelMock = new Mock<IModel>();
             var connectionMock = new Mock<IConnection>(MockBehavior.Strict);
-            connectionMock.Setup(c => c.CreateModel())
-                          .Returns(channelMock.Object);
+            connectionMock.Setup(c => c.CreateModel()).Returns(channelMock.Object);
             var connectionFactoryMock = new Mock<IConnectionFactory>(MockBehavior.Strict);
-            connectionFactoryMock.Setup(f => f.CreateConnection())
-                                 .Returns(connectionMock.Object);
-            var contextBuilder = new RabbitMQContextBuilder().WithExchange("Exchange3")
-                                                             .WithAddress("localhost", 5672);
+            connectionFactoryMock.Setup(f => f.CreateConnection()).Returns(connectionMock.Object);
+            RabbitMQContextBuilder contextBuilder = new RabbitMQContextBuilder().WithExchange("Exchange3")
+                                                                                .WithAddress("localhost", 5672);
 
             // Act
-            var context = contextBuilder.CreateContext(connectionFactoryMock.Object);
+            RabbitMQBusContext context = contextBuilder.CreateContext(connectionFactoryMock.Object);
 
             // Assert
             Assert.AreEqual(connectionMock.Object, context.Connection);
         }
+
         #endregion
     }
 }

@@ -1,7 +1,7 @@
-﻿using System;
-
-namespace Minor.Nein
+﻿namespace Minor.Nein
 {
+    using System;
+
     public interface ICommandReceiver : IDisposable
     {
         string QueueName { get; }

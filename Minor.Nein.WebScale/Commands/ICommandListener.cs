@@ -1,8 +1,8 @@
-﻿using RabbitMQ.Client;
-using System;
-
-namespace Minor.Nein.WebScale
+﻿namespace Minor.Nein.WebScale
 {
+    using System;
+    using RabbitMQ.Client;
+
     public interface ICommandListener : IDisposable
     {
         string QueueName { get; }

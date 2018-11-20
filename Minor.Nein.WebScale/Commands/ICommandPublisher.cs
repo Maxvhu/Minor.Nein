@@ -1,8 +1,8 @@
-﻿using System;
-using System.Threading.Tasks;
-
-namespace Minor.Nein.WebScale
+﻿namespace Minor.Nein.WebScale
 {
+    using System;
+    using System.Threading.Tasks;
+
     public interface ICommandPublisher : IDisposable
     {
         string QueueName { get; set; }

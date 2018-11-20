@@ -1,15 +1,15 @@
-﻿using Microsoft.Extensions.Logging;
-using RabbitMQ.Client;
-using System;
-
-namespace Minor.Nein.RabbitMQBus
+﻿namespace Minor.Nein.RabbitMQBus
 {
+    using System;
+    using Microsoft.Extensions.Logging;
+    using RabbitMQ.Client;
+
     public class RabbitMQMessageSender : IMessageSender
     {
+        private readonly ILogger _log;
+        private bool disposed;
         public string ExchangeName { get; }
         private IModel Channel { get; }
-        private readonly ILogger _log;
-        private bool disposed = false;
 
         public RabbitMQMessageSender(RabbitMQBusContext context)
         {
@@ -24,21 +24,19 @@ namespace Minor.Nein.RabbitMQBus
 
             _log.LogTrace($"Sending message to routing key {message.RoutingKey ?? ""}");
 
-            byte[] body = message.EncodeMessage();
+            var body = message.EncodeMessage();
 
             IBasicProperties basicProperties = Channel.CreateBasicProperties();
-            basicProperties.Timestamp = new AmqpTimestamp(message.Timestamp == 0 ? DateTime.Now.Ticks : message.Timestamp);
+            basicProperties.Timestamp =
+                    new AmqpTimestamp(message.Timestamp == 0 ? DateTime.Now.Ticks : message.Timestamp);
             basicProperties.CorrelationId = message.CorrelationId ?? Guid.NewGuid().ToString();
             basicProperties.Type = message.EventType ?? "";
 
-            Channel.BasicPublish(exchange: ExchangeName,
-                                 routingKey: message.RoutingKey,
-                                 mandatory: false,
-                                 basicProperties: basicProperties,
-                                 body: body);
+            Channel.BasicPublish(ExchangeName, message.RoutingKey, false, basicProperties, body);
         }
 
         #region Dispose
+
         public void Dispose()
         {
             Dispose(true);
@@ -48,7 +46,9 @@ namespace Minor.Nein.RabbitMQBus
         protected virtual void Dispose(bool disposing)
         {
             if (disposed)
+            {
                 return;
+            }
 
             if (disposing)
             {
@@ -70,6 +70,7 @@ namespace Minor.Nein.RabbitMQBus
                 throw new ObjectDisposedException(GetType().FullName);
             }
         }
+
         #endregion
     }
 }

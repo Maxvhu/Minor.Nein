@@ -1,8 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-
-namespace Minor.Nein
+﻿namespace Minor.Nein
 {
+    using System;
+    using System.Collections.Generic;
+
     public interface IMessageReceiver : IDisposable
     {
         string QueueName { get; }

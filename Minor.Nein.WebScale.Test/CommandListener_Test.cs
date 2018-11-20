@@ -1,11 +1,11 @@
-using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Moq;
-using Newtonsoft.Json;
-using RabbitMQ.Client;
-using System.Linq;
-
 namespace Minor.Nein.WebScale.Test
 {
+    using System.Linq;
+    using Microsoft.VisualStudio.TestTools.UnitTesting;
+    using Moq;
+    using Newtonsoft.Json;
+    using RabbitMQ.Client;
+
     [TestClass]
     public class CommandListener_Test
     {
@@ -27,26 +27,44 @@ namespace Minor.Nein.WebScale.Test
             var mock = new Mock<IBusContext<IConnection>>(MockBehavior.Strict);
             mock.Setup(m => m.CreateCommandReceiver("queue")).Returns(commandReceiverMock.Object);
 
-            var methodCommandInfo = new MethodCommandInfo(null, null, null,null, "queue");
+            var methodCommandInfo = new MethodCommandInfo(null, null, null, null, "queue");
             var target = new CommandListener(methodCommandInfo);
 
             target.DeclareQueue(mock.Object);
-
         }
 
-        private class TestClass
+        [TestMethod]
+        public void HandleTest()
         {
-            public bool Called { get; private set; }
-            public TestCommand TestCalled(TestCommand command)
-            {
-                Called = true;
-                return new TestCommand() {Message = "Message2"};
-            }
-        }
+            var methodCommandInfo = new MethodCommandInfo(typeof(TestClass), typeof(TestClass).GetMethod("TestCalled")
+                  , typeof(TestClass).GetMethod("TestCalled").GetParameters().First()
+                  , typeof(TestClass).GetMethod("TestCalled").ReturnType, "queue");
+            var target = new CommandListener(methodCommandInfo);
 
-        private class TestCommand : DomainCommand
-        {
-            public string Message { get; set; }
+            var hostMock = new Mock<IMicroserviceHost>(MockBehavior.Strict);
+            hostMock.Setup(m => m.CreateInstanceOfType(typeof(TestClass))).Returns(new TestClass());
+
+            var commandReceiverMock = new Mock<ICommandReceiver>(MockBehavior.Strict);
+            commandReceiverMock.Setup(m => m.DeclareCommandQueue()).Verifiable();
+            commandReceiverMock.Setup(m => m.StartReceivingCommands(target.Handle));
+
+            var iBusContextMock = new Mock<IBusContext<IConnection>>(MockBehavior.Strict);
+            iBusContextMock.Setup(m => m.CreateCommandReceiver("queue")).Returns(commandReceiverMock.Object);
+
+            target.DeclareQueue(iBusContextMock.Object);
+            target.StartListening(hostMock.Object);
+
+            var command = new TestCommand
+                          {
+                                  Message = "message"
+                          };
+
+            var message = new CommandMessage(JsonConvert.SerializeObject(command), typeof(TestCommand).FullName, null);
+
+            CommandMessage result = target.Handle(message);
+
+            var objectResult = JsonConvert.DeserializeObject<TestCommand>(result.Message);
+            Assert.AreEqual("Message2", objectResult.Message);
         }
 
         [TestMethod]
@@ -64,43 +82,28 @@ namespace Minor.Nein.WebScale.Test
 
             var iBusContextMock = new Mock<IBusContext<IConnection>>(MockBehavior.Strict);
             iBusContextMock.Setup(m => m.CreateCommandReceiver("queue")).Returns(commandReceiverMock.Object);
-           
+
             target.DeclareQueue(iBusContextMock.Object);
             target.StartListening(hostMock.Object);
-
         }
 
-        [TestMethod]
-        public void HandleTest()
+        private class TestClass
         {
-            var methodCommandInfo = new MethodCommandInfo(typeof(TestClass), 
-                typeof(TestClass).GetMethod("TestCalled"), 
-                typeof(TestClass).GetMethod("TestCalled").GetParameters().First(),
-                typeof(TestClass).GetMethod("TestCalled").ReturnType,
-                "queue");
-           var target = new CommandListener(methodCommandInfo);
+            public bool Called { get; private set; }
 
-            var hostMock = new Mock<IMicroserviceHost>(MockBehavior.Strict);
-            hostMock.Setup(m => m.CreateInstanceOfType(typeof(TestClass))).Returns(new TestClass());
+            public TestCommand TestCalled(TestCommand command)
+            {
+                Called = true;
+                return new TestCommand
+                       {
+                               Message = "Message2"
+                       };
+            }
+        }
 
-            var commandReceiverMock = new Mock<ICommandReceiver>(MockBehavior.Strict);
-            commandReceiverMock.Setup(m => m.DeclareCommandQueue()).Verifiable();
-            commandReceiverMock.Setup(m => m.StartReceivingCommands(target.Handle));
-
-            var iBusContextMock = new Mock<IBusContext<IConnection>>(MockBehavior.Strict);
-            iBusContextMock.Setup(m => m.CreateCommandReceiver("queue")).Returns(commandReceiverMock.Object);
-
-            target.DeclareQueue(iBusContextMock.Object);
-            target.StartListening(hostMock.Object);
-
-            TestCommand command = new TestCommand() {Message = "message"};
-
-            var message = new CommandMessage(JsonConvert.SerializeObject(command), typeof(TestCommand).FullName, null);
-
-            var result = target.Handle(message);
-
-            var objectResult = JsonConvert.DeserializeObject<TestCommand>(result.Message);
-            Assert.AreEqual("Message2", objectResult.Message);
+        private class TestCommand : DomainCommand
+        {
+            public string Message { get; set; }
         }
     }
 }

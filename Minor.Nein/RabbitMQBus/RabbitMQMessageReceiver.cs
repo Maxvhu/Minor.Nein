@@ -1,26 +1,24 @@
-﻿using Microsoft.Extensions.Logging;
-using RabbitMQ.Client;
-using RabbitMQ.Client.Events;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-
-namespace Minor.Nein.RabbitMQBus
+﻿namespace Minor.Nein.RabbitMQBus
 {
+    using System;
+    using System.Collections.Generic;
+    using System.Linq;
+    using System.Text;
+    using Microsoft.Extensions.Logging;
+    using RabbitMQ.Client;
+    using RabbitMQ.Client.Events;
+
     public class RabbitMQMessageReceiver : IMessageReceiver
     {
-        private IModel Channel { get; }
-        public string ExchangeName { get; }
+        private readonly ILogger _log;
+        private bool _disposed;
         private bool _listening;
         private bool _queueDeclared;
-        public string QueueName { get; }
-        public IEnumerable<string> TopicExpressions { get; }
-        private bool _disposed = false;
-        private readonly ILogger _log;
+        public string ExchangeName { get; }
+        private IModel Channel { get; }
 
-
-        public RabbitMQMessageReceiver(RabbitMQBusContext context, string queueName, IEnumerable<string> topicExpressions)
+        public RabbitMQMessageReceiver(RabbitMQBusContext context, string queueName
+                                     , IEnumerable<string> topicExpressions)
         {
             _log = NeinLogger.CreateLogger<RabbitMQMessageReceiver>();
 
@@ -33,6 +31,9 @@ namespace Minor.Nein.RabbitMQBus
             _listening = false;
             _queueDeclared = false;
         }
+
+        public string QueueName { get; }
+        public IEnumerable<string> TopicExpressions { get; }
 
         public void DeclareQueue()
         {
@@ -48,21 +49,15 @@ namespace Minor.Nein.RabbitMQBus
             {
                 _log.LogInformation($"Queue {QueueName} is now listening on default routingKey");
 
-                Channel.QueueBind(queue: QueueName,
-                                  exchange: ExchangeName,
-                                  routingKey: "",
-                                  arguments: null);
+                Channel.QueueBind(QueueName, ExchangeName, "", null);
             }
             else
             {
-                foreach (var bindingKey in TopicExpressions)
+                foreach (string bindingKey in TopicExpressions)
                 {
                     _log.LogInformation($"Queue {QueueName} is now listening on {bindingKey}");
 
-                    Channel.QueueBind(queue: QueueName,
-                                      exchange: ExchangeName,
-                                      routingKey: bindingKey,
-                                      arguments: null);
+                    Channel.QueueBind(QueueName, ExchangeName, bindingKey, null);
                 }
             }
 
@@ -77,6 +72,7 @@ namespace Minor.Nein.RabbitMQBus
                 _log.LogWarning($"Trying to start listening to ({QueueName}) twice");
                 throw new BusConfigurationException("Can't start listening multiple times");
             }
+
             if (callback == null)
             {
                 throw new ArgumentNullException(nameof(callback));
@@ -86,23 +82,19 @@ namespace Minor.Nein.RabbitMQBus
             consumer.Received += (model, ea) =>
             {
                 var body = ea.Body;
-                var message = Encoding.UTF8.GetString(body);
+                string message = Encoding.UTF8.GetString(body);
 
-                var eventMessage = new EventMessage(ea.RoutingKey, message, ea.BasicProperties.Type, ea.BasicProperties.Timestamp.UnixTime, ea.BasicProperties.CorrelationId);
+                var eventMessage = new EventMessage(ea.RoutingKey, message, ea.BasicProperties.Type
+                      , ea.BasicProperties.Timestamp.UnixTime, ea.BasicProperties.CorrelationId);
                 callback(eventMessage);
             };
 
-            Channel.BasicConsume(queue: QueueName,
-                                 autoAck: true,
-                                 consumerTag: "",
-                                 noLocal: false,
-                                 exclusive: false,
-                                 arguments: null,
-                                 consumer: consumer);
+            Channel.BasicConsume(QueueName, true, "", false, false, null, consumer);
             _listening = true;
         }
 
         #region Dispose
+
         public void Dispose()
         {
             Dispose(true);
@@ -112,7 +104,9 @@ namespace Minor.Nein.RabbitMQBus
         protected virtual void Dispose(bool disposing)
         {
             if (_disposed)
+            {
                 return;
+            }
 
             if (disposing)
             {
@@ -134,6 +128,7 @@ namespace Minor.Nein.RabbitMQBus
                 throw new ObjectDisposedException(GetType().FullName);
             }
         }
+
         #endregion
     }
 }

@@ -1,43 +1,22 @@
-﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading;
-
-namespace Minor.Nein.TestBus.Test
+﻿namespace Minor.Nein.TestBus.Test
 {
+    using System.Collections.Generic;
+    using System.Linq;
+    using System.Threading;
+    using Microsoft.VisualStudio.TestTools.UnitTesting;
+
     [TestClass]
     public class TestMessageReceiver_Test
     {
-        [TestMethod]
-        public void MessageReceiverCallbackGetsCalledWhenMessageIsAddedOnQueue()
-        {
-            var context = new TestBusContext();
-
-            var receiver = context.CreateMessageReceiver("receiver", new List<string> { "#" });
-            var autoResetEvent = new AutoResetEvent(false);
-            IEventMessage message = null;
-
-            receiver.DeclareQueue();
-            receiver.StartReceivingMessages((e) =>
-            {
-                message = e;
-                autoResetEvent.Set();
-            });
-
-            context.TestQueues["receiver"].Queue.Enqueue(new EventMessage("message", "message sending"));
-
-            autoResetEvent.WaitOne();
-
-            Assert.IsNotNull(message);
-            Assert.AreEqual("message sending", message.Message);
-        }
-
         [TestMethod]
         public void MessageReceiverCallbackGetsCalledMultipleTimesWhenListeningLonger()
         {
             var context = new TestBusContext();
 
-            var receiver = context.CreateMessageReceiver("receiver", new List<string> { "#" });
+            IMessageReceiver receiver = context.CreateMessageReceiver("receiver", new List<string>
+                                                                                  {
+                                                                                          "#"
+                                                                                  });
             var autoResetEvent = new AutoResetEvent(false);
             var messages = new List<IEventMessage>();
 
@@ -47,7 +26,7 @@ namespace Minor.Nein.TestBus.Test
             context.TestQueues["receiver"].Queue.Enqueue(new EventMessage("message", "2"));
             context.TestQueues["receiver"].Queue.Enqueue(new EventMessage("message", "3"));
 
-            receiver.StartReceivingMessages((e) =>
+            receiver.StartReceivingMessages(e =>
             {
                 messages.Add(e);
                 autoResetEvent.Set();
@@ -65,11 +44,41 @@ namespace Minor.Nein.TestBus.Test
         }
 
         [TestMethod]
+        public void MessageReceiverCallbackGetsCalledWhenMessageIsAddedOnQueue()
+        {
+            var context = new TestBusContext();
+
+            IMessageReceiver receiver = context.CreateMessageReceiver("receiver", new List<string>
+                                                                                  {
+                                                                                          "#"
+                                                                                  });
+            var autoResetEvent = new AutoResetEvent(false);
+            IEventMessage message = null;
+
+            receiver.DeclareQueue();
+            receiver.StartReceivingMessages(e =>
+            {
+                message = e;
+                autoResetEvent.Set();
+            });
+
+            context.TestQueues["receiver"].Queue.Enqueue(new EventMessage("message", "message sending"));
+
+            autoResetEvent.WaitOne();
+
+            Assert.IsNotNull(message);
+            Assert.AreEqual("message sending", message.Message);
+        }
+
+        [TestMethod]
         public void MessageReceiverCallingQueueDeclaredTwiceThrowsException()
         {
             var context = new TestBusContext();
 
-            var receiver = context.CreateMessageReceiver("receiver", new List<string> { "#" });
+            IMessageReceiver receiver = context.CreateMessageReceiver("receiver", new List<string>
+                                                                                  {
+                                                                                          "#"
+                                                                                  });
 
             receiver.DeclareQueue();
 
@@ -81,7 +90,10 @@ namespace Minor.Nein.TestBus.Test
         {
             var context = new TestBusContext();
 
-            var receiver = context.CreateMessageReceiver("receiver", new List<string> { "#" });
+            IMessageReceiver receiver = context.CreateMessageReceiver("receiver", new List<string>
+                                                                                  {
+                                                                                          "#"
+                                                                                  });
             receiver.DeclareQueue();
             receiver.StartReceivingMessages(null);
 
@@ -93,7 +105,10 @@ namespace Minor.Nein.TestBus.Test
         {
             var context = new TestBusContext();
 
-            var receiver = context.CreateMessageReceiver("receiver", new List<string> { "#" });
+            IMessageReceiver receiver = context.CreateMessageReceiver("receiver", new List<string>
+                                                                                  {
+                                                                                          "#"
+                                                                                  });
 
             Assert.ThrowsException<KeyNotFoundException>(() => receiver.StartReceivingMessages(null));
         }

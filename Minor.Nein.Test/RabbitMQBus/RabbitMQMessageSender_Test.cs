@@ -1,17 +1,18 @@
-﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Minor.Nein.Test;
-using Moq;
-using RabbitMQ.Client;
-using RabbitMQ.Client.Framing;
-using System;
-using System.Text;
-
-namespace Minor.Nein.RabbitMQBus.Test
+﻿namespace Minor.Nein.RabbitMQBus.Test
 {
+    using System;
+    using System.Text;
+    using Microsoft.VisualStudio.TestTools.UnitTesting;
+    using Moq;
+    using Nein.Test;
+    using RabbitMQ.Client;
+    using RabbitMQ.Client.Framing;
+
     [TestClass]
     public class RabbitMQMessageSender_Test
     {
         #region Constructor
+
         [TestMethod]
         public void Constructor_SetsPropertiesCorrectly()
         {
@@ -19,8 +20,7 @@ namespace Minor.Nein.RabbitMQBus.Test
             var channelMock = new Mock<IModel>(MockBehavior.Strict);
             var connectionMock = new Mock<IConnection>(MockBehavior.Strict);
 
-            connectionMock.Setup(c => c.CreateModel())
-                          .Returns(channelMock.Object);
+            connectionMock.Setup(c => c.CreateModel()).Returns(channelMock.Object);
 
             var context = new RabbitMQBusContext(connectionMock.Object, "ExchangeName");
 
@@ -29,12 +29,14 @@ namespace Minor.Nein.RabbitMQBus.Test
 
             // Assert
             Assert.AreEqual("ExchangeName", sender.ExchangeName);
-            IModel channel = TestHelper.GetPrivateProperty<IModel>(sender, "Channel");
+            var channel = TestHelper.GetPrivateProperty<IModel>(sender, "Channel");
             Assert.AreEqual(channelMock.Object, channel);
         }
+
         #endregion
 
         #region SendMessage
+
         [TestMethod]
         public void SendMessage_CallsBasicPublish_WithCorrectRoutingKey()
         {
@@ -42,21 +44,14 @@ namespace Minor.Nein.RabbitMQBus.Test
             var propsMock = new Mock<IBasicProperties>();
 
             var channelMock = new Mock<IModel>(MockBehavior.Strict);
-            channelMock.Setup(c => c.BasicPublish("Testexchange1",
-                                                  It.Is<string>(k => k == "MyRoutingKey"),
-                                                  false,
-                                                  propsMock.Object,
-                                                  It.Is<byte[]>(b => Encoding.UTF8.GetString(b) == "MyMessage")))
+            channelMock.Setup(c => c.BasicPublish("Testexchange1", It.Is<string>(k => k == "MyRoutingKey"), false
+                             , propsMock.Object, It.Is<byte[]>(b => Encoding.UTF8.GetString(b) == "MyMessage")))
                        .Verifiable();
 
-            channelMock.Setup(c => c.CreateBasicProperties())
-                       .Returns(propsMock.Object)
-                       .Verifiable();
+            channelMock.Setup(c => c.CreateBasicProperties()).Returns(propsMock.Object).Verifiable();
 
             var connectionMock = new Mock<IConnection>(MockBehavior.Strict);
-            connectionMock.Setup(c => c.CreateModel())
-                          .Returns(channelMock.Object)
-                          .Verifiable();
+            connectionMock.Setup(c => c.CreateModel()).Returns(channelMock.Object).Verifiable();
 
             var context = new RabbitMQBusContext(connectionMock.Object, "Testexchange1");
 
@@ -76,21 +71,14 @@ namespace Minor.Nein.RabbitMQBus.Test
             var propsMock = new Mock<IBasicProperties>();
 
             var channelMock = new Mock<IModel>(MockBehavior.Strict);
-            channelMock.Setup(c => c.BasicPublish(It.Is<string>(k => k == "Testexchange1"),
-                                                  "MyRoutingKey",
-                                                  false,
-                                                  propsMock.Object,
-                                                  It.Is<byte[]>(b => Encoding.UTF8.GetString(b) == "MyMessage")))
+            channelMock.Setup(c => c.BasicPublish(It.Is<string>(k => k == "Testexchange1"), "MyRoutingKey", false
+                             , propsMock.Object, It.Is<byte[]>(b => Encoding.UTF8.GetString(b) == "MyMessage")))
                        .Verifiable();
 
-            channelMock.Setup(c => c.CreateBasicProperties())
-                       .Returns(propsMock.Object)
-                       .Verifiable();
+            channelMock.Setup(c => c.CreateBasicProperties()).Returns(propsMock.Object).Verifiable();
 
             var connectionMock = new Mock<IConnection>(MockBehavior.Strict);
-            connectionMock.Setup(c => c.CreateModel())
-                          .Returns(channelMock.Object)
-                          .Verifiable();
+            connectionMock.Setup(c => c.CreateModel()).Returns(channelMock.Object).Verifiable();
 
             var context = new RabbitMQBusContext(connectionMock.Object, "Testexchange1");
 
@@ -110,21 +98,13 @@ namespace Minor.Nein.RabbitMQBus.Test
             var propsMock = new Mock<IBasicProperties>();
 
             var channelMock = new Mock<IModel>(MockBehavior.Strict);
-            channelMock.Setup(c => c.BasicPublish("Testexchange1",
-                                                  "MyRoutingKey",
-                                                  false,
-                                                  propsMock.Object,
-                                                  It.Is<byte[]>(b => Encoding.UTF8.GetString(b) == "MyMessage")))
-                       .Verifiable();
+            channelMock.Setup(c => c.BasicPublish("Testexchange1", "MyRoutingKey", false, propsMock.Object
+                  , It.Is<byte[]>(b => Encoding.UTF8.GetString(b) == "MyMessage"))).Verifiable();
 
-            channelMock.Setup(c => c.CreateBasicProperties())
-                       .Returns(propsMock.Object)
-                       .Verifiable();
+            channelMock.Setup(c => c.CreateBasicProperties()).Returns(propsMock.Object).Verifiable();
 
             var connectionMock = new Mock<IConnection>(MockBehavior.Strict);
-            connectionMock.Setup(c => c.CreateModel())
-                          .Returns(channelMock.Object)
-                          .Verifiable();
+            connectionMock.Setup(c => c.CreateModel()).Returns(channelMock.Object).Verifiable();
 
             var context = new RabbitMQBusContext(connectionMock.Object, "Testexchange1");
 
@@ -145,21 +125,13 @@ namespace Minor.Nein.RabbitMQBus.Test
             IBasicProperties props = new BasicProperties();
 
             var channelMock = new Mock<IModel>(MockBehavior.Strict);
-            channelMock.Setup(c => c.CreateBasicProperties())
-                       .Returns(props)
-                       .Verifiable();
+            channelMock.Setup(c => c.CreateBasicProperties()).Returns(props).Verifiable();
 
-            channelMock.Setup(c => c.BasicPublish("Testxchange1",
-                                                  "MyRoutingKey",
-                                                  false,
-                                                  It.Is<IBasicProperties>(p => p.Type == "Test"),
-                                                  It.IsAny<Byte[]>()))
-                       .Verifiable();
+            channelMock.Setup(c => c.BasicPublish("Testxchange1", "MyRoutingKey", false
+                  , It.Is<IBasicProperties>(p => p.Type == "Test"), It.IsAny<byte[]>())).Verifiable();
 
             var connectionMock = new Mock<IConnection>(MockBehavior.Strict);
-            connectionMock.Setup(c => c.CreateModel())
-                          .Returns(channelMock.Object)
-                          .Verifiable();
+            connectionMock.Setup(c => c.CreateModel()).Returns(channelMock.Object).Verifiable();
 
             var context = new RabbitMQBusContext(connectionMock.Object, "Testxchange1");
 
@@ -179,21 +151,14 @@ namespace Minor.Nein.RabbitMQBus.Test
             IBasicProperties props = new BasicProperties();
 
             var channelMock = new Mock<IModel>(MockBehavior.Strict);
-            channelMock.Setup(c => c.CreateBasicProperties())
-                       .Returns(props)
-                       .Verifiable();
+            channelMock.Setup(c => c.CreateBasicProperties()).Returns(props).Verifiable();
 
-            channelMock.Setup(c => c.BasicPublish("Testxchange1",
-                                                  "MyRoutingKey",
-                                                  false,
-                                                  It.Is<IBasicProperties>(p => p.Timestamp.UnixTime == 9),
-                                                  It.IsAny<Byte[]>()))
+            channelMock.Setup(c => c.BasicPublish("Testxchange1", "MyRoutingKey", false
+                             , It.Is<IBasicProperties>(p => p.Timestamp.UnixTime == 9), It.IsAny<byte[]>()))
                        .Verifiable();
 
             var connectionMock = new Mock<IConnection>(MockBehavior.Strict);
-            connectionMock.Setup(c => c.CreateModel())
-                          .Returns(channelMock.Object)
-                          .Verifiable();
+            connectionMock.Setup(c => c.CreateModel()).Returns(channelMock.Object).Verifiable();
 
             var context = new RabbitMQBusContext(connectionMock.Object, "Testxchange1");
 
@@ -213,21 +178,14 @@ namespace Minor.Nein.RabbitMQBus.Test
             IBasicProperties props = new BasicProperties();
 
             var channelMock = new Mock<IModel>(MockBehavior.Strict);
-            channelMock.Setup(c => c.CreateBasicProperties())
-                       .Returns(props)
-                       .Verifiable();
+            channelMock.Setup(c => c.CreateBasicProperties()).Returns(props).Verifiable();
 
-            channelMock.Setup(c => c.BasicPublish("Testxchange1",
-                                                  "MyRoutingKey",
-                                                  false,
-                                                  It.Is<IBasicProperties>(p => p.CorrelationId == "correlationID"),
-                                                  It.IsAny<Byte[]>()))
+            channelMock.Setup(c => c.BasicPublish("Testxchange1", "MyRoutingKey", false
+                             , It.Is<IBasicProperties>(p => p.CorrelationId == "correlationID"), It.IsAny<byte[]>()))
                        .Verifiable();
 
             var connectionMock = new Mock<IConnection>(MockBehavior.Strict);
-            connectionMock.Setup(c => c.CreateModel())
-                                 .Returns(channelMock.Object)
-                                 .Verifiable();
+            connectionMock.Setup(c => c.CreateModel()).Returns(channelMock.Object).Verifiable();
 
             var context = new RabbitMQBusContext(connectionMock.Object, "Testxchange1");
 
@@ -247,8 +205,7 @@ namespace Minor.Nein.RabbitMQBus.Test
             var channelMock = new Mock<IModel>();
 
             var connectionMock = new Mock<IConnection>();
-            connectionMock.Setup(c => c.CreateModel())
-                          .Returns(channelMock.Object);
+            connectionMock.Setup(c => c.CreateModel()).Returns(channelMock.Object);
 
             var context = new RabbitMQBusContext(connectionMock.Object, "Testexchange1");
 
@@ -261,6 +218,7 @@ namespace Minor.Nein.RabbitMQBus.Test
                 sender.SendMessage(new EventMessage("MyRoutingKey", "MyMessage"));
             });
         }
+
         #endregion
     }
 }

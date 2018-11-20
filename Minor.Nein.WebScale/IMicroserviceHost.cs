@@ -1,7 +1,7 @@
-﻿using System;
-
-namespace Minor.Nein.WebScale
+﻿namespace Minor.Nein.WebScale
 {
+    using System;
+
     public interface IMicroserviceHost : IDisposable
     {
         IServiceProvider Provider { get; }

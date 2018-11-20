@@ -1,8 +1,8 @@
-﻿using System;
-
-namespace Minor.Nein.WebScale
+﻿namespace Minor.Nein.WebScale
 {
-    class NoSuitableConstructorException : Exception
+    using System;
+
+    internal class NoSuitableConstructorException : Exception
     {
         public NoSuitableConstructorException()
         {
@@ -11,6 +11,5 @@ namespace Minor.Nein.WebScale
         public NoSuitableConstructorException(string message) : base(message)
         {
         }
-
     }
 }

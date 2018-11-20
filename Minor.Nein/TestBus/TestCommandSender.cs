@@ -1,18 +1,18 @@
-﻿using RabbitMQ.Client.Framing;
-using System;
-using System.Collections.Concurrent;
-using System.Threading;
-using System.Threading.Tasks;
-
-namespace Minor.Nein.TestBus
+﻿namespace Minor.Nein.TestBus
 {
+    using System;
+    using System.Collections.Concurrent;
+    using System.Threading;
+    using System.Threading.Tasks;
+    using RabbitMQ.Client.Framing;
+
     public class TestCommandSender : ICommandSender
     {
-        private TestBusContext Context { get; }
-        private readonly string _replyQueueName;
-
         public readonly ConcurrentDictionary<string, TaskCompletionSource<CommandMessage>> CallbackMapper =
-            new ConcurrentDictionary<string, TaskCompletionSource<CommandMessage>>();
+                new ConcurrentDictionary<string, TaskCompletionSource<CommandMessage>>();
+
+        private readonly string _replyQueueName;
+        private TestBusContext Context { get; }
 
         public TestCommandSender(TestBusContext context)
         {
@@ -32,21 +32,23 @@ namespace Minor.Nein.TestBus
                         continue;
                     }
 
-                    var response = queue.Dequeue();
+                    TestBusCommandMessage response = queue.Dequeue();
 
-                    if (!CallbackMapper.TryRemove(response.Props.CorrelationId, out TaskCompletionSource<CommandMessage> tcs))
+                    if (!CallbackMapper.TryRemove(response.Props.CorrelationId, out var tcs))
+                    {
                         return;
-                    var commandResponse = response.Message;
-                    tcs.TrySetResult(commandResponse);
+                    }
 
+                    CommandMessage commandResponse = response.Message;
+                    tcs.TrySetResult(commandResponse);
                 }
             }).Start();
-
         }
+
         public Task<CommandMessage> SendCommandAsync(CommandMessage request, string queueName)
         {
-            BasicProperties props = new BasicProperties();
-            var correlationId = Guid.NewGuid().ToString();
+            var props = new BasicProperties();
+            string correlationId = Guid.NewGuid().ToString();
             props.CorrelationId = correlationId;
             props.Type = request.MessageType == null ? "" : request.MessageType;
             props.ReplyTo = _replyQueueName;
@@ -59,9 +61,13 @@ namespace Minor.Nein.TestBus
             return tcs.Task;
         }
 
+        public void Dispose()
+        {
+        }
+
         public string GenerateRandomQueueName()
         {
-            var chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+            string chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
             var stringChars = new char[30];
             var random = new Random();
 
@@ -70,11 +76,7 @@ namespace Minor.Nein.TestBus
                 stringChars[i] = chars[random.Next(chars.Length)];
             }
 
-            return new String(stringChars);
-        }
-
-        public void Dispose()
-        {
+            return new string(stringChars);
         }
     }
 }

@@ -1,8 +1,8 @@
-﻿using System;
-using System.Runtime.Serialization;
-
-namespace Minor.Nein
+﻿namespace Minor.Nein
 {
+    using System;
+    using System.Runtime.Serialization;
+
     [Serializable]
     public class BusConfigurationException : Exception
     {

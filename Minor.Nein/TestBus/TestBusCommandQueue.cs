@@ -1,7 +1,7 @@
-﻿using RabbitMQ.Client.Framing;
-
-namespace Minor.Nein.TestBus
+﻿namespace Minor.Nein.TestBus
 {
+    using RabbitMQ.Client.Framing;
+
     public class TestBusCommandMessage
     {
         public CommandMessage Message { get; set; }

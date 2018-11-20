@@ -1,11 +1,11 @@
-﻿using Minor.Nein;
-using Minor.Nein.WebScale;
-using Newtonsoft.Json;
-using System;
-using System.Threading;
-
-namespace VoorbeeldMicroservice
+﻿namespace VoorbeeldMicroservice
 {
+    using System;
+    using System.Threading;
+    using Minor.Nein;
+    using Minor.Nein.WebScale;
+    using Newtonsoft.Json;
+
     [EventListener("MVM.TestService.PolisEventListenerQueue")]
     public class PolisEventListener
     {
@@ -27,12 +27,6 @@ namespace VoorbeeldMicroservice
             return evt.i * evt.i;
         }
 
-        [Topic("MVM.Polisbeheer.PolisToegevoegd")]
-        public void Handles(PolisToegevoegdEvent evt)
-        {
-            Console.WriteLine("Werkt dit?????????");
-        }
-
         [Command("Testje2")]
         public int CommandListner2(TestCommand evt)
         {
@@ -41,17 +35,23 @@ namespace VoorbeeldMicroservice
             return evt.i * evt.i * evt.i;
         }
 
+        [Topic("MVM.Polisbeheer.PolisToegevoegd")]
+        public void Handles(PolisToegevoegdEvent evt)
+        {
+            Console.WriteLine("Werkt dit?????????");
+        }
+
+        [Topic("Test")]
+        public void Handles(HenkToegevoegdEvent evt)
+        {
+            Console.WriteLine("Test Message ontvangen:");
+            Console.WriteLine(evt.Test);
+        }
+
         [Topic("#")]
         public void HandlesNew(EventMessage evt)
         {
             Console.WriteLine("Eventmessage voor auditlog Bericht ontvangen met #:");
-            Console.WriteLine(evt.Message);
-        }
-
-        [Topic("MVM.Polisbeheer.*")]
-        public void HandlesOld(PolisToegevoegdEvent evt)
-        {
-            Console.WriteLine("Bericht ontvangen met *:");
             Console.WriteLine(evt.Message);
         }
 
@@ -62,11 +62,11 @@ namespace VoorbeeldMicroservice
             Console.WriteLine(evt.Message);
         }
 
-        [Topic("Test")]
-        public void Handles(HenkToegevoegdEvent evt)
+        [Topic("MVM.Polisbeheer.*")]
+        public void HandlesOld(PolisToegevoegdEvent evt)
         {
-            Console.WriteLine("Test Message ontvangen:");
-            Console.WriteLine(evt.Test);
+            Console.WriteLine("Bericht ontvangen met *:");
+            Console.WriteLine(evt.Message);
         }
     }
 
@@ -82,21 +82,21 @@ namespace VoorbeeldMicroservice
 
     public class PolisToegevoegdEvent : DomainEvent
     {
+        [JsonProperty]
+        public string Message { get; set; }
+
         public PolisToegevoegdEvent(string routingKey) : base(routingKey)
         {
         }
-
-        [JsonProperty]
-        public string Message { get; set; }
     }
 
     public class HenkToegevoegdEvent : DomainEvent
     {
+        [JsonProperty]
+        public string Test { get; set; }
+
         public HenkToegevoegdEvent(string routingKey) : base(routingKey)
         {
         }
-
-        [JsonProperty]
-        public string Test { get; set; }
     }
 }

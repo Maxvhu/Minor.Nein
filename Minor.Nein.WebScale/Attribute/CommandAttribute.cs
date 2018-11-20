@@ -1,11 +1,11 @@
-﻿using System;
-
-namespace Minor.Nein.WebScale
+﻿namespace Minor.Nein.WebScale
 {
+    using System;
+
     [AttributeUsage(AttributeTargets.Method)]
     public class CommandAttribute : Attribute
     {
-        public String Queuename { get; }
+        public string Queuename { get; }
 
         public CommandAttribute(string queuename)
         {

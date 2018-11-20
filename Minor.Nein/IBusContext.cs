@@ -1,17 +1,17 @@
-﻿using System;
-using System.Collections.Generic;
-
-namespace Minor.Nein
+﻿namespace Minor.Nein
 {
+    using System;
+    using System.Collections.Generic;
+
     public interface IBusContext<TConnection> : IDisposable
     {
         TConnection Connection { get; }
         string ExchangeName { get; }
-
-        IMessageSender CreateMessageSender();
-        IMessageReceiver CreateMessageReceiver(string queueName, IEnumerable<string> topicExpressions);
+        ICommandReceiver CreateCommandReceiver(string queueName);
 
         ICommandSender CreateCommandSender();
-        ICommandReceiver CreateCommandReceiver(string queueName);
+        IMessageReceiver CreateMessageReceiver(string queueName, IEnumerable<string> topicExpressions);
+
+        IMessageSender CreateMessageSender();
     }
 }

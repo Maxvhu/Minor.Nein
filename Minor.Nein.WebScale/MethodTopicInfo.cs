@@ -1,11 +1,19 @@
-﻿using System;
-using System.Reflection;
-
-namespace Minor.Nein.WebScale
+﻿namespace Minor.Nein.WebScale
 {
+    using System;
+    using System.Reflection;
+
     public class MethodTopicInfo
     {
-        public MethodTopicInfo(Type classType, bool hasDefaultConstructor, string topicName, MethodInfo methodInfo, ParameterInfo methodParameter)
+        public Type ClassType { get; set; }
+        public bool HasDefaultConstructor { get; set; }
+        public MethodInfo MethodInfo { get; set; }
+        public ParameterInfo MethodParameter { get; set; }
+
+        public string TopicName { get; set; }
+
+        public MethodTopicInfo(Type classType, bool hasDefaultConstructor, string topicName, MethodInfo methodInfo
+                             , ParameterInfo methodParameter)
         {
             ClassType = classType;
             HasDefaultConstructor = hasDefaultConstructor;
@@ -13,12 +21,5 @@ namespace Minor.Nein.WebScale
             MethodInfo = methodInfo;
             MethodParameter = methodParameter;
         }
-
-        public Type ClassType { get; set; }
-        public bool HasDefaultConstructor { get; set; }
-
-        public string TopicName { get; set; }
-        public MethodInfo MethodInfo { get; set; }
-        public ParameterInfo MethodParameter { get; set; }
     }
 }

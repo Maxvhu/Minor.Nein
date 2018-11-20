@@ -1,7 +1,7 @@
-﻿using System;
-
-namespace VoorbeeldMicroservice
+﻿namespace VoorbeeldMicroservice
 {
+    using System;
+
     public class SinaasAppelDataMapper : IDataMapper
     {
         public void Print()

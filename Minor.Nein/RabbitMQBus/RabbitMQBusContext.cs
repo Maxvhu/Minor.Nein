@@ -1,16 +1,14 @@
-﻿using Microsoft.Extensions.Logging;
-using RabbitMQ.Client;
-using System;
-using System.Collections.Generic;
-
-namespace Minor.Nein.RabbitMQBus
+﻿namespace Minor.Nein.RabbitMQBus
 {
+    using System;
+    using System.Collections.Generic;
+    using Microsoft.Extensions.Logging;
+    using RabbitMQ.Client;
+
     public class RabbitMQBusContext : IBusContext<IConnection>
     {
-        public IConnection Connection { get; }
-        public string ExchangeName { get; }
-        private bool disposed = false;
-        private ILogger _log;
+        private readonly ILogger _log;
+        private bool disposed;
 
         public RabbitMQBusContext(IConnection connection, string exchangeName)
         {
@@ -18,6 +16,9 @@ namespace Minor.Nein.RabbitMQBus
             Connection = connection;
             ExchangeName = exchangeName;
         }
+
+        public IConnection Connection { get; }
+        public string ExchangeName { get; }
 
         public IMessageSender CreateMessageSender()
         {
@@ -56,6 +57,7 @@ namespace Minor.Nein.RabbitMQBus
         }
 
         #region Dispose
+
         public void Dispose()
         {
             Dispose(true);
@@ -65,7 +67,9 @@ namespace Minor.Nein.RabbitMQBus
         protected virtual void Dispose(bool disposing)
         {
             if (disposed)
+            {
                 return;
+            }
 
             if (disposing)
             {
@@ -87,6 +91,7 @@ namespace Minor.Nein.RabbitMQBus
                 throw new ObjectDisposedException(GetType().FullName);
             }
         }
+
         #endregion
     }
 }

@@ -1,16 +1,14 @@
-﻿using System.Collections.Generic;
-using System.Threading;
-using System.Threading.Tasks;
-
-namespace Minor.Nein.TestBus
+﻿namespace Minor.Nein.TestBus
 {
+    using System.Collections.Generic;
+    using System.Threading;
+    using System.Threading.Tasks;
+
     public class TestMessageReceiver : IMessageReceiver
     {
-        public string QueueName { get; }
-        public IEnumerable<string> TopicExpressions { get; }
-        public TestBusContext Context { get; }
         private bool _queueDeclared;
         private bool _startedListening;
+        public TestBusContext Context { get; }
 
         public TestMessageReceiver(TestBusContext context, string queueName, IEnumerable<string> topicExpressions)
         {
@@ -18,6 +16,9 @@ namespace Minor.Nein.TestBus
             QueueName = queueName;
             TopicExpressions = topicExpressions;
         }
+
+        public string QueueName { get; }
+        public IEnumerable<string> TopicExpressions { get; }
 
         public void DeclareQueue()
         {
@@ -59,7 +60,7 @@ namespace Minor.Nein.TestBus
                         continue;
                     }
 
-                     callback.Invoke(queue.Dequeue());
+                    callback.Invoke(queue.Dequeue());
                 }
             }).Start();
             _startedListening = true;

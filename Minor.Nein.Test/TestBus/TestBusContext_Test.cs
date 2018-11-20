@@ -1,93 +1,89 @@
-﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
-using System.Collections.Generic;
-
-namespace Minor.Nein.TestBus.Test
+﻿namespace Minor.Nein.TestBus.Test
 {
+    using System.Collections.Generic;
+    using Microsoft.VisualStudio.TestTools.UnitTesting;
+
     [TestClass]
     public class TestBusContext_Test
     {
-        #region CreateMessageSender
-        [TestMethod]
-        public void CreateMessageSender_ReturnsTestMessageSender()
-        {
-            // Arrange
-            TestBusContext context = new TestBusContext();
-
-            // Act
-            var sender = context.CreateMessageSender();
-
-            // Assert
-            Assert.IsInstanceOfType(sender, typeof(TestMessageSender));
-        }
-        #endregion
-
-        #region CreateMessageReceiver
-        [TestMethod]
-        public void CreateMessageReceiver_ReturnsTestMessageReceiver()
-        {
-            // Arrange
-            TestBusContext context = new TestBusContext();
-
-            // Act
-            var receiver = context.CreateMessageReceiver("TestQueue", new List<string> { "test.routing.key" });
-
-            // Assert
-            Assert.IsInstanceOfType(receiver, typeof(TestMessageReceiver));
-        }
-        #endregion
-
-        #region CreateCommandSender
-        [TestMethod]
-        public void CreateCommandSender_ReturnsTestCommandSender()
-        {
-            // Arrange
-            TestBusContext context = new TestBusContext();
-
-            // Act
-            var sender = context.CreateCommandSender();
-
-            // Assert
-            Assert.IsInstanceOfType(sender, typeof(TestCommandSender));
-        }
-        #endregion
-
         #region CreateCommandReceiver
+
         [TestMethod]
         public void CreateCommandReceiver_ReturnsTestCommandReceiver()
         {
             // Arrange
-            TestBusContext context = new TestBusContext();
+            var context = new TestBusContext();
 
             // Act
-            var receiver = context.CreateCommandReceiver("TestQueue");
+            ICommandReceiver receiver = context.CreateCommandReceiver("TestQueue");
 
             // Assert
             Assert.IsInstanceOfType(receiver, typeof(TestCommandReceiver));
         }
+
         #endregion
 
-        #region DeclareQueue
+        #region CreateCommandSender
+
         [TestMethod]
-        public void DeclareQueue_AddsQueue()
+        public void CreateCommandSender_ReturnsTestCommandSender()
         {
             // Arrange
-            TestBusContext context = new TestBusContext();
+            var context = new TestBusContext();
 
             // Act
-            context.DeclareQueue("TestQueue", new List<string> { "test.routing.key" });
+            ICommandSender sender = context.CreateCommandSender();
 
             // Assert
-            Assert.AreEqual(1, context.TestQueues.Count);
-            Assert.IsNotNull(context.TestQueues["TestQueue"]);
+            Assert.IsInstanceOfType(sender, typeof(TestCommandSender));
         }
+
+        #endregion
+
+        #region CreateMessageReceiver
+
+        [TestMethod]
+        public void CreateMessageReceiver_ReturnsTestMessageReceiver()
+        {
+            // Arrange
+            var context = new TestBusContext();
+
+            // Act
+            IMessageReceiver receiver = context.CreateMessageReceiver("TestQueue", new List<string>
+                                                                                   {
+                                                                                           "test.routing.key"
+                                                                                   });
+
+            // Assert
+            Assert.IsInstanceOfType(receiver, typeof(TestMessageReceiver));
+        }
+
+        #endregion
+
+        #region CreateMessageSender
+
+        [TestMethod]
+        public void CreateMessageSender_ReturnsTestMessageSender()
+        {
+            // Arrange
+            var context = new TestBusContext();
+
+            // Act
+            IMessageSender sender = context.CreateMessageSender();
+
+            // Assert
+            Assert.IsInstanceOfType(sender, typeof(TestMessageSender));
+        }
+
         #endregion
 
         #region DeclareCommandQueue
+
         [TestMethod]
         public void DeclareCommandQueue_AddsQueue()
         {
             // Arrange
-            TestBusContext context = new TestBusContext();
+            var context = new TestBusContext();
 
             // Act
             context.DeclareCommandQueue("TestQueue");
@@ -96,6 +92,28 @@ namespace Minor.Nein.TestBus.Test
             Assert.AreEqual(1, context.CommandQueues.Count);
             Assert.IsNotNull(context.CommandQueues["TestQueue"]);
         }
+
+        #endregion
+
+        #region DeclareQueue
+
+        [TestMethod]
+        public void DeclareQueue_AddsQueue()
+        {
+            // Arrange
+            var context = new TestBusContext();
+
+            // Act
+            context.DeclareQueue("TestQueue", new List<string>
+                                              {
+                                                      "test.routing.key"
+                                              });
+
+            // Assert
+            Assert.AreEqual(1, context.TestQueues.Count);
+            Assert.IsNotNull(context.TestQueues["TestQueue"]);
+        }
+
         #endregion
     }
 }

@@ -1,34 +1,120 @@
-﻿using Microsoft.Extensions.Logging;
-using RabbitMQ.Client;
-using RabbitMQ.Client.Exceptions;
-using System;
-
-namespace Minor.Nein.RabbitMQBus
+﻿namespace Minor.Nein.RabbitMQBus
 {
+    using System;
+    using Microsoft.Extensions.Logging;
+    using RabbitMQ.Client;
+    using RabbitMQ.Client.Exceptions;
+
     public class RabbitMQContextBuilder
     {
+        private readonly ILogger _log;
+        private string _password;
         public string ExchangeName { get; private set; }
         public string HostName { get; private set; }
         public int Port { get; private set; }
         public string UserName { get; private set; }
-        private string _password;
-        private ILogger _log;
 
         public RabbitMQContextBuilder()
         {
             _log = NeinLogger.CreateLogger<RabbitMQContextBuilder>();
         }
 
-        public RabbitMQContextBuilder WithExchange(string exchangeName)
+        /// <summary>
+        ///     Creates a context with
+        ///     - an opened connection (based on HostName, Port, UserName and Password)
+        ///     - a declared Topic-Exchange (based on ExchangeName)
+        /// </summary>
+        /// <returns></returns>
+        public RabbitMQBusContext CreateContext(IConnectionFactory factory = null)
         {
-            _log.LogTrace("Creating Context with exchangeName " + exchangeName);
-            ExchangeName = exchangeName;
+            _log.LogInformation("Creating RabbitMQ Connection");
+            if (HostName == null)
+            {
+                throw new ArgumentNullException(nameof(HostName));
+            }
+
+            if (HostName == "")
+            {
+                throw new ArgumentException(nameof(HostName) + " was empty");
+            }
+
+            if (Port < 0 || Port > 65535)
+            {
+                throw new ArgumentOutOfRangeException(nameof(Port));
+            }
+
+            factory = factory
+                      ?? new ConnectionFactory
+                         {
+                                 HostName = HostName
+                               , UserName = UserName
+                               , Password = _password
+                               , Port = Port
+                         };
+
+            try
+            {
+                IConnection connection = factory.CreateConnection();
+                var context = new RabbitMQBusContext(connection, ExchangeName);
+
+                using (IModel channel = connection.CreateModel())
+                {
+                    channel.ExchangeDeclare(ExchangeName, "topic");
+                }
+
+                _log.LogInformation("RabbitMQ connection succesfully created");
+                return context;
+            }
+            catch (BrokerUnreachableException e)
+            {
+                _log.LogError("Could not connect with the RabbitMQ Environment");
+                throw e;
+            }
+        }
+
+        public RabbitMQContextBuilder ReadFromEnvironmentVariables()
+        {
+            if (TryGetFromEnvironmentVariable("ExchangeName", out string exchangeName))
+            {
+                ExchangeName = exchangeName;
+            }
+
+            if (TryGetFromEnvironmentVariable("HostName", out string hostName))
+            {
+                HostName = hostName;
+            }
+
+            if (TryGetFromEnvironmentVariable("Port", out string portString))
+            {
+                try
+                {
+                    Port = Convert.ToInt32(portString);
+                }
+                catch (Exception)
+                {
+                    throw new InvalidCastException("Could not convert PORT environment variable to a number");
+                }
+            }
+
+            if (TryGetFromEnvironmentVariable("UserName", out string userName))
+            {
+                UserName = userName;
+            }
+
+            if (TryGetFromEnvironmentVariable("Password", out string password))
+            {
+                _password = password;
+            }
+
+            _log.LogTrace(
+                    $"Creating Context with the use of environment variables. username {UserName}, hostname {HostName}, port {Port}, exchangeName {ExchangeName}");
+
             return this;
         }
 
         public RabbitMQContextBuilder WithAddress(string hostName, int port)
         {
-            _log.LogTrace("Creating Context with hostname " + hostName + " And port " + port );
+            _log.LogTrace("Creating Context with hostname " + hostName + " And port " + port);
             HostName = hostName;
             Port = port;
             return this;
@@ -42,89 +128,11 @@ namespace Minor.Nein.RabbitMQBus
             return this;
         }
 
-        public RabbitMQContextBuilder ReadFromEnvironmentVariables()
+        public RabbitMQContextBuilder WithExchange(string exchangeName)
         {
-            if (TryGetFromEnvironmentVariable("ExchangeName", out var exchangeName))
-            {
-                ExchangeName = exchangeName;
-            }
-            if (TryGetFromEnvironmentVariable("HostName", out var hostName))
-            {
-                HostName = hostName;
-            }
-            if (TryGetFromEnvironmentVariable("Port", out var portString))
-            {
-                try
-                {
-                    Port = Convert.ToInt32(portString);
-                }
-                catch (Exception)
-                {
-                    throw new InvalidCastException("Could not convert PORT environment variable to a number");
-                }
-            }
-            if (TryGetFromEnvironmentVariable("UserName", out var userName))
-            {
-                UserName = userName;
-            }
-            if (TryGetFromEnvironmentVariable("Password", out var password))
-            {
-                _password = password;
-            }
-
-            _log.LogTrace($"Creating Context with the use of environment variables. username {UserName}, hostname {HostName}, port {Port}, exchangeName {ExchangeName}");
-
+            _log.LogTrace("Creating Context with exchangeName " + exchangeName);
+            ExchangeName = exchangeName;
             return this;
-        }
-
-        /// <summary>
-        /// Creates a context with 
-        ///  - an opened connection (based on HostName, Port, UserName and Password)
-        ///  - a declared Topic-Exchange (based on ExchangeName)
-        /// </summary>
-        /// <returns></returns>
-        public RabbitMQBusContext CreateContext(IConnectionFactory factory = null)
-        {
-            _log.LogInformation("Creating RabbitMQ Connection");
-            if (HostName == null)
-            {
-                throw new ArgumentNullException(nameof(HostName));
-            }
-            if (HostName == "")
-            {
-                throw new ArgumentException(nameof(HostName) + " was empty");
-            }
-            if (Port < 0 || Port > 65535)
-            {
-                throw new ArgumentOutOfRangeException(nameof(Port));
-            }
-
-            factory = factory ?? new ConnectionFactory()
-            {
-                HostName = HostName,
-                UserName = UserName,
-                Password = _password,
-                Port = Port
-            };
-
-            try
-            {
-                var connection = factory.CreateConnection();
-                var context = new RabbitMQBusContext(connection, ExchangeName);
-
-                using (var channel = connection.CreateModel())
-                {
-                    channel.ExchangeDeclare(ExchangeName, type: "topic");
-                }
-
-                _log.LogInformation("RabbitMQ connection succesfully created");
-                return context;
-            }
-            catch (BrokerUnreachableException e)
-            {
-                _log.LogError("Could not connect with the RabbitMQ Environment");
-                throw e;
-            }
         }
 
         private bool TryGetFromEnvironmentVariable(string key, out string variable)
