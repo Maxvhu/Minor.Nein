@@ -1,4 +1,4 @@
-﻿using Minor.Nijn.WebScale;
+﻿using Minor.Nein.WebScale;
 
 namespace VoorbeeldMicroservice
 {

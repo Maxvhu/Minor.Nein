@@ -1,8 +1,8 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Console;
-using Minor.Nijn.RabbitMQBus;
-using Minor.Nijn.WebScale;
+using Minor.Nein.RabbitMQBus;
+using Minor.Nein.WebScale;
 using System;
 using System.Threading.Tasks;
 

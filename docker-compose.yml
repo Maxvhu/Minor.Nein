@@ -1,0 +1,12 @@
+version: '3.3'
+
+services:
+  rabbit:
+    image: "rabbitmq:management"
+    container_name: nein-default-rabbitmq
+    environment:
+      RABBITMQ_DEFAULT_USER: "guest"
+      RABBITMQ_DEFAULT_PASS: "guest"
+    ports:
+      - "15672:15672"
+      - "5672:5672"

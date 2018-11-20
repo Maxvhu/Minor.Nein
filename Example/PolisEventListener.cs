@@ -1,5 +1,5 @@
-﻿using Minor.Nijn;
-using Minor.Nijn.WebScale;
+﻿using Minor.Nein;
+using Minor.Nein.WebScale;
 using Newtonsoft.Json;
 using System;
 using System.Threading;
