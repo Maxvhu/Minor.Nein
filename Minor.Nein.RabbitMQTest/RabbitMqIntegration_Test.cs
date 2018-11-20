@@ -9,7 +9,7 @@
     public class RabbitMqIntegration_Test
     {
         private RabbitMQBusContext _context;
-        private readonly string _hostname = "192.168.99.100";
+        private readonly string _hostname = "localhost";
 
         [TestMethod]
         public void SendAndReceiveWithTopicsCorrectly()
