@@ -8,7 +8,7 @@
     using RabbitMQ.Client;
 
     [TestClass]
-    public class RabbitMQBusContext_Test
+    public class RabbitMQBusContextTest
     {
         #region CreateMessageSender
 

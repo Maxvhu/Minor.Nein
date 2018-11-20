@@ -7,7 +7,7 @@ namespace Minor.Nein.WebScale.Test
     using RabbitMQ.Client;
 
     [TestClass]
-    public class CommandListener_Test
+    public class CommandListenerTest
     {
         [TestMethod]
         public void CommandListenerConstructorTest()

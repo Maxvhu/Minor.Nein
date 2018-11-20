@@ -5,7 +5,7 @@
     using Microsoft.VisualStudio.TestTools.UnitTesting;
 
     [TestClass]
-    public class TestCommandSender_Test
+    public class TestCommandSenderTest
     {
         [TestMethod]
         public void CreateTestCommandSenderDeclaresNewQueue()

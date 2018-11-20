@@ -4,7 +4,7 @@
     using Microsoft.VisualStudio.TestTools.UnitTesting;
 
     [TestClass]
-    public class TestMessageSender_Test
+    public class TestMessageSenderTest
     {
         [TestMethod]
         public void IsTopicMatchTest()

@@ -9,7 +9,7 @@
     using RabbitMQ.Client.Framing;
 
     [TestClass]
-    public class RabbitMQMessageSender_Test
+    public class RabbitMQMessageSenderTest
     {
         #region Constructor
 

@@ -7,7 +7,7 @@
     using RabbitMQ.Client;
 
     [TestClass]
-    public class RabbitMQContextBuilder_Test
+    public class RabbitMqContextBuilderTest
     {
         #region WithAddress
 

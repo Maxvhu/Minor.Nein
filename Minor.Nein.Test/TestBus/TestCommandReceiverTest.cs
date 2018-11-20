@@ -7,7 +7,7 @@
     using RabbitMQ.Client.Framing;
 
     [TestClass]
-    public class TestCommandReceiver_Test
+    public class TestCommandReceiverTest
     {
         [TestMethod]
         public void DeclareCommandQueueTest()

@@ -6,7 +6,7 @@
     using Microsoft.VisualStudio.TestTools.UnitTesting;
 
     [TestClass]
-    public class TestMessageReceiver_Test
+    public class TestMessageReceiverTest
     {
         [TestMethod]
         public void MessageReceiverCallbackGetsCalledMultipleTimesWhenListeningLonger()

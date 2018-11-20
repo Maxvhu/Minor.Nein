@@ -4,7 +4,7 @@
     using Microsoft.VisualStudio.TestTools.UnitTesting;
 
     [TestClass]
-    public class TestBusContext_Test
+    public class TestBusContextTest
     {
         #region CreateCommandReceiver
 

@@ -11,7 +11,7 @@ namespace Minor.Nein.RabbitMQBus.Test
     using RabbitMQ.Client.Framing;
 
     [TestClass]
-    public class RabbitMQMessageReceiver_Test
+    public class RabbitMQMessageReceiverTest
     {
         #region Constructor
 

@@ -5,7 +5,7 @@
     using RabbitMQ.Client;
 
     [TestClass]
-    public class RabbitMQCommandReceiver_Test
+    public class RabbitMQCommandReceiverTest
     {
         [TestMethod]
         public void DeclareCommandQueueTest()

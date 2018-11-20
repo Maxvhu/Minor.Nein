@@ -6,7 +6,7 @@
     using RabbitMQBus;
 
     [TestClass]
-    public class RabbitMqIntegration_Test
+    public class RabbitMQIntegrationTest
     {
         private RabbitMQBusContext _context;
         private readonly string _hostname = "localhost";
