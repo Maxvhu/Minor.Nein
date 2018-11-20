@@ -2,11 +2,16 @@
 
   <PropertyGroup>
     <TargetFramework>netcoreapp2.1</TargetFramework>
-    <Authors>Martijn van Adrichem, Duncan Verbrugge</Authors>
-    <Description>Wrapper around RabbitMQ</Description>
+    <Authors>Duncan Verbrugge; Dion de Koning; Lisa Groenendijk; Max Visser</Authors>
+    <Description>Wrapper around RabbitMQ. 
+Forked from https://github.com/MartijnvAdrichem/Minor.Nijn</Description>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-    <Version>1.4.2</Version>
+    <Version>1.0.0</Version>
     <PackageReleaseNotes></PackageReleaseNotes>
+    <Company>Duncan Verbrugge; Dion de Koning; Lisa Groenendijk; Max Visser</Company>
+    <PackageProjectUrl>https://github.com/Maxvhu/Minor.Nein</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/Maxvhu/Minor.Nein</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
   </PropertyGroup>
 
   <ItemGroup>
