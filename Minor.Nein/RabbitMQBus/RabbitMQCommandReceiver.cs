@@ -56,9 +56,14 @@
                 }
                 catch (Exception e)
                 {
-                    Exception ie = e.InnerException;
-                    response = new CommandMessage(ie.Message, ie.GetType().ToString(), props.CorrelationId);
-                    replyProps.Type = ie.GetType().ToString();
+                    Exception innerException = e.InnerException;
+                    if (innerException != null)
+                    {
+                        response = new CommandMessage(innerException.Message, innerException.GetType().ToString(), props.CorrelationId);
+                        replyProps.Type = innerException.GetType().ToString();
+                    }
+
+                    _log.LogError("{0} command response resulted in an error", NeinLogger.GetFunctionInformation());
                 }
                 finally
                 {
