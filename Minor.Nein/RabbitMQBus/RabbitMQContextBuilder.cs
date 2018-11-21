@@ -70,7 +70,7 @@
             catch (BrokerUnreachableException e)
             {
                 _log.LogError("Could not connect with the RabbitMQ Environment");
-                throw e;
+                throw;
             }
         }
 
