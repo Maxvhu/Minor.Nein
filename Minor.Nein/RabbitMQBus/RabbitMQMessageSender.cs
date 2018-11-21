@@ -1,13 +1,14 @@
 ﻿namespace Minor.Nein.RabbitMQBus
 {
     using System;
+    using System.Diagnostics;
     using Microsoft.Extensions.Logging;
     using RabbitMQ.Client;
 
     public class RabbitMQMessageSender : IMessageSender
     {
         private readonly ILogger _log;
-        private bool disposed;
+
         public string ExchangeName { get; }
         private IModel Channel { get; }
 
@@ -37,6 +38,7 @@
 
         #region Dispose
 
+        private bool _disposed;
         public void Dispose()
         {
             Dispose(true);
@@ -45,7 +47,7 @@
 
         protected virtual void Dispose(bool disposing)
         {
-            if (disposed)
+            if (_disposed)
             {
                 return;
             }
@@ -55,7 +57,7 @@
                 Channel?.Dispose();
             }
 
-            disposed = true;
+            _disposed = true;
         }
 
         ~RabbitMQMessageSender()
@@ -65,9 +67,12 @@
 
         private void CheckDisposed()
         {
-            if (disposed)
+            if (_disposed)
             {
-                throw new ObjectDisposedException(GetType().FullName);
+                var logger = NeinLogger.CreateLogger<RabbitMQMessageSender>();
+                logger.LogCritical($"{NeinLogger.GetFunctionInformation()} Trying to call a function in a disposed object! (Function: {NeinLogger.GetCallerName()})");
+
+                throw new ObjectDisposedException(GetType().FullName, $"Trying to call a function in a disposed object! (Function: {NeinLogger.GetCallerName()})");
             }
         }
 

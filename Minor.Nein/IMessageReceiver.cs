@@ -9,7 +9,7 @@
         IEnumerable<string> TopicExpressions { get; }
 
         void DeclareQueue();
-        void StartReceivingMessages(EventMessageReceivedCallback Callback);
+        void StartReceivingMessages(EventMessageReceivedCallback callback);
     }
 
     public delegate void EventMessageReceivedCallback(IEventMessage eventMessage);

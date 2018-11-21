@@ -98,5 +98,28 @@
         }
 
         #endregion
+
+        [TestMethod]
+        public void CallingFunctionAfterDisposalShouldReturnDisposeException()
+        {
+            // Arrange
+            var connectionMock = new Mock<IConnection>();
+            Action result = null;
+
+            // Act
+            using (var context = new RabbitMQBusContext(connectionMock.Object, "TestExchange"))
+            {
+                result = () =>
+                {
+                    context.CreateCommandReceiver("");
+                };
+            }
+
+
+            // Assert
+            var assert = Assert.ThrowsException<ObjectDisposedException>(result);
+            Assert.AreEqual("Trying to call a function in a disposed object! (Function: CreateCommandReceiver)\r\nObject name: 'Minor.Nein.RabbitMQBus.RabbitMQBusContext'."
+                                , assert.Message);
+        }
     }
 }

@@ -2,13 +2,14 @@
 {
     using System;
     using System.Collections.Generic;
+    using System.Diagnostics;
+    using System.Runtime.CompilerServices;
     using Microsoft.Extensions.Logging;
     using RabbitMQ.Client;
 
     public class RabbitMQBusContext : IBusContext<IConnection>
     {
         private readonly ILogger _log;
-        private bool disposed;
 
         public RabbitMQBusContext(IConnection connection, string exchangeName)
         {
@@ -25,8 +26,7 @@
             CheckDisposed();
 
             _log.LogInformation("Creating new RabbitMQ Message Sender");
-            var messageSender = new RabbitMQMessageSender(this);
-            return messageSender;
+            return new RabbitMQMessageSender(this);
         }
 
         public IMessageReceiver CreateMessageReceiver(string queueName, IEnumerable<string> topicExpressions)
@@ -34,8 +34,7 @@
             CheckDisposed();
 
             _log.LogInformation("Creating new RabbitMQ Message Receiver");
-            var messageReciever = new RabbitMQMessageReceiver(this, queueName, topicExpressions);
-            return messageReciever;
+            return new RabbitMQMessageReceiver(this, queueName, topicExpressions);
         }
 
         public ICommandSender CreateCommandSender()
@@ -43,8 +42,7 @@
             CheckDisposed();
 
             _log.LogInformation("Creating new RabbitMQ Command Sender");
-            var commandSender = new RabbitMQCommandSender(this);
-            return commandSender;
+            return new RabbitMQCommandSender(this);
         }
 
         public ICommandReceiver CreateCommandReceiver(string queueName)
@@ -52,11 +50,12 @@
             CheckDisposed();
 
             _log.LogInformation("Creating new RabbitMQ Command receiver");
-            var commandReceiver = new RabbitMQCommandReceiver(this, queueName);
-            return commandReceiver;
+            return new RabbitMQCommandReceiver(this, queueName);
         }
 
         #region Dispose
+
+        private bool _disposed;
 
         public void Dispose()
         {
@@ -66,7 +65,7 @@
 
         protected virtual void Dispose(bool disposing)
         {
-            if (disposed)
+            if (_disposed)
             {
                 return;
             }
@@ -76,7 +75,7 @@
                 Connection?.Dispose();
             }
 
-            disposed = true;
+            _disposed = true;
         }
 
         ~RabbitMQBusContext()
@@ -86,9 +85,12 @@
 
         private void CheckDisposed()
         {
-            if (disposed)
+            if (_disposed)
             {
-                throw new ObjectDisposedException(GetType().FullName);
+                var logger = NeinLogger.CreateLogger<RabbitMQBusContext>();
+                logger.LogCritical($"{NeinLogger.GetFunctionInformation()} Trying to call a function in a disposed object! (Function: {NeinLogger.GetCallerName()})");
+
+                throw new ObjectDisposedException(GetType().FullName, $"Trying to call a function in a disposed object! (Function: {NeinLogger.GetCallerName()})");
             }
         }
 

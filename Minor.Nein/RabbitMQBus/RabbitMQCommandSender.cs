@@ -2,6 +2,7 @@
 {
     using System;
     using System.Collections.Concurrent;
+    using System.Diagnostics;
     using System.Text;
     using System.Threading.Tasks;
     using Microsoft.Extensions.Logging;
@@ -16,7 +17,6 @@
         private readonly EventingBasicConsumer _consumer;
         private readonly ILogger _logger;
         private readonly string _replyQueueName;
-        private bool _disposed;
 
         private IModel Channel { get; }
 
@@ -57,8 +57,8 @@
 
             if (queueName == _replyQueueName)
             {
-                _logger.LogWarning("The queuename {0} has the same same as the reply queue name, this should not happen"
-                      , _replyQueueName);
+                _logger.LogWarning("The queuename {0} has the same same as the reply queue name, this should not happen", _replyQueueName);
+
                 throw new ArgumentException($"The queuename {queueName} is the same as the reply queue name");
             }
 
@@ -72,8 +72,7 @@
             var tcs = new TaskCompletionSource<CommandMessage>();
             _callbackMapper.TryAdd(correlationId, tcs);
 
-            _logger.LogTrace("Sending command message with correlation id {id} and body {body} ", correlationId
-                  , request);
+            _logger.LogTrace("Sending command message with correlation id {id} and body {body} ", correlationId, request);
 
             Channel.BasicPublish("", queueName, false, props, message);
 
@@ -83,6 +82,8 @@
         }
 
         #region Dispose
+
+        private bool _disposed;
 
         public void Dispose()
         {
@@ -114,7 +115,10 @@
         {
             if (_disposed)
             {
-                throw new ObjectDisposedException(GetType().FullName);
+                var logger = NeinLogger.CreateLogger<RabbitMQCommandSender>();
+                logger.LogCritical($"{NeinLogger.GetFunctionInformation()} Trying to call a function in a disposed object! (Function: {NeinLogger.GetCallerName()})");
+
+                throw new ObjectDisposedException(GetType().FullName, $"Trying to call a function in a disposed object! (Function: {NeinLogger.GetCallerName()})");
             }
         }
 

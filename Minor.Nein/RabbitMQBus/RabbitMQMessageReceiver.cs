@@ -2,6 +2,7 @@
 {
     using System;
     using System.Collections.Generic;
+    using System.Diagnostics;
     using System.Linq;
     using System.Text;
     using Microsoft.Extensions.Logging;
@@ -11,7 +12,7 @@
     public class RabbitMQMessageReceiver : IMessageReceiver
     {
         private readonly ILogger _log;
-        private bool _disposed;
+
         private bool _listening;
         private bool _queueDeclared;
         public string ExchangeName { get; }
@@ -95,6 +96,8 @@
 
         #region Dispose
 
+        private bool _disposed;
+
         public void Dispose()
         {
             Dispose(true);
@@ -125,7 +128,10 @@
         {
             if (_disposed)
             {
-                throw new ObjectDisposedException(GetType().FullName);
+                var logger = NeinLogger.CreateLogger<RabbitMQMessageReceiver>();
+                logger.LogCritical($"{NeinLogger.GetFunctionInformation()} Trying to call a function in a disposed object! (Function: {NeinLogger.GetCallerName()})");
+
+                throw new ObjectDisposedException(GetType().FullName, $"Trying to call a function in a disposed object! (Function: {NeinLogger.GetCallerName()})");
             }
         }
 

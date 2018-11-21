@@ -1,6 +1,7 @@
 ﻿namespace Minor.Nein.RabbitMQBus
 {
     using System;
+    using System.Diagnostics;
     using System.Text;
     using Microsoft.Extensions.Logging;
     using RabbitMQ.Client;
@@ -9,15 +10,15 @@
     public class RabbitMQCommandReceiver : ICommandReceiver
     {
         private readonly ILogger _log;
-        private bool _disposed;
 
         private IModel Channel { get; }
 
         public RabbitMQCommandReceiver(RabbitMQBusContext context, string queueName)
         {
+            _log = NeinLogger.CreateLogger<RabbitMQCommandReceiver>();
+
             Channel = context.Connection.CreateModel();
             QueueName = queueName;
-            _log = NeinLogger.CreateLogger<RabbitMQCommandReceiver>();
         }
 
         public string QueueName { get; }
@@ -66,10 +67,13 @@
                     Channel.BasicAck(ea.DeliveryTag, false);
                 }
             };
+
             _log.LogInformation("Started listening for commands on queue {0} ", QueueName);
         }
 
         #region Dispose
+
+        private bool _disposed;
 
         public void Dispose()
         {
@@ -101,7 +105,10 @@
         {
             if (_disposed)
             {
-                throw new ObjectDisposedException(GetType().FullName);
+                var logger = NeinLogger.CreateLogger<RabbitMQCommandReceiver>();
+                logger.LogCritical($"{NeinLogger.GetFunctionInformation()} Trying to call a function in a disposed object! (Function: {NeinLogger.GetCallerName()})");
+
+                throw new ObjectDisposedException(GetType().FullName, $"Trying to call a function in a disposed object! (Function: {NeinLogger.GetCallerName()})");
             }
         }
 
