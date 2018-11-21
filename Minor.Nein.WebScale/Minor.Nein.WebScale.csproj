@@ -6,7 +6,7 @@
     <Description>Wrapper around RabbitMQ. 
 Forked from https://github.com/MartijnvAdrichem/Minor.Nijn</Description>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-    <Version>1.0.0</Version>
+    <Version>1.0.1</Version>
     <PackageReleaseNotes></PackageReleaseNotes>
     <Company>Duncan Verbrugge; Dion de Koning; Lisa Groenendijk; Max Visser</Company>
     <PackageProjectUrl>https://github.com/Maxvhu/Minor.Nein</PackageProjectUrl>
