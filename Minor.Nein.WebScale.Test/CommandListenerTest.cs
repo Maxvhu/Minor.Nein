@@ -59,7 +59,7 @@ namespace Minor.Nein.WebScale.Test
                                   Message = "message"
                           };
 
-            var message = new CommandMessage(JsonConvert.SerializeObject(command), typeof(TestCommand).FullName, null);
+            var message = new CommandMessage(JsonConvert.SerializeObject(command), null);
 
             CommandMessage result = target.Handle(message);
 

@@ -1,12 +1,13 @@
 ﻿namespace VoorbeeldMicroservice
 {
     using System;
-    using System.Threading;
     using Minor.Nein;
     using Minor.Nein.WebScale;
+    using Minor.Nein.WebScale.Attributes;
     using Newtonsoft.Json;
 
     [EventListener("MVM.TestService.PolisEventListenerQueue")]
+    [CommandListener]
     public class PolisEventListener
     {
         private readonly IDataMapper mapper;
@@ -22,7 +23,7 @@
         [Command("Testje")]
         public int CommandListner(TestCommand evt)
         {
-            Thread.Sleep(5000);
+            //Thread.Sleep(1000);
             Console.WriteLine("TestCommand ontvangen:");
             return evt.i * evt.i;
         }
@@ -30,7 +31,7 @@
         [Command("Testje2")]
         public int CommandListner2(TestCommand evt)
         {
-            Thread.Sleep(5000);
+            //Thread.Sleep(5000);
             Console.WriteLine("TestCommand ontvangen:");
             return evt.i * evt.i * evt.i;
         }

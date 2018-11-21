@@ -37,7 +37,7 @@
 
             context.DeclareCommandQueue("queue");
 
-            var message = new CommandMessage("message", null, null);
+            var message = new CommandMessage("message", null);
             var task = sender.SendCommandAsync(message, "queue");
             Assert.AreEqual(1, sender.CallbackMapper.Count);
 

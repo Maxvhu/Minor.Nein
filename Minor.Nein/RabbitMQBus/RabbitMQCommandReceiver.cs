@@ -59,7 +59,7 @@
                     Exception innerException = e.InnerException;
                     if (innerException != null)
                     {
-                        response = new CommandMessage(innerException.Message, innerException.GetType().ToString(), props.CorrelationId);
+                        response = new CommandMessage(innerException.Message, innerException.GetType(), props.CorrelationId);
                         replyProps.Type = innerException.GetType().ToString();
                     }
 

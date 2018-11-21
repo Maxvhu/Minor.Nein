@@ -1,4 +1,4 @@
-﻿namespace Minor.Nein.WebScale
+﻿namespace Minor.Nein.WebScale.Attributes
 {
     using System;
 

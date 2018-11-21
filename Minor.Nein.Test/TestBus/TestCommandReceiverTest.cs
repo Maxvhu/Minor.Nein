@@ -55,7 +55,7 @@
                 return cm;
             });
 
-            context.CommandQueues["queue"].Enqueue(new TestBusCommandMessage(new CommandMessage("message", null, null)
+            context.CommandQueues["queue"].Enqueue(new TestBusCommandMessage(new CommandMessage("message", null)
                   , new BasicProperties
                     {
                             ReplyTo = "responseQueue"
@@ -81,7 +81,7 @@
                 return new CommandMessage(message, cm.MessageType, cm.CorrelationId);
             });
 
-            var mess = new CommandMessage("message", null, null);
+            var mess = new CommandMessage("message", null);
             CommandMessage result = await sender.SendCommandAsync(mess, "queue");
 
             Assert.AreEqual("message2", result.Message);

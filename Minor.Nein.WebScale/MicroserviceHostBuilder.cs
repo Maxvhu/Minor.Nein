@@ -4,6 +4,7 @@
     using System.Collections.Generic;
     using System.Linq;
     using System.Reflection;
+    using Attributes;
     using Microsoft.Extensions.DependencyInjection;
     using Microsoft.Extensions.Logging;
     using RabbitMQ.Client;
@@ -109,7 +110,9 @@
             foreach (Type type in types)
             {
                 var eventListenerAttribute = type.GetCustomAttribute<EventListenerAttribute>();
-                if (eventListenerAttribute == null)
+                var commandListenerAttribute = type.GetCustomAttribute<CommandListenerAttribute>();
+
+                if (eventListenerAttribute == null && commandListenerAttribute == null)
                 {
                     continue;
                 }
@@ -119,7 +122,20 @@
                     _eventListeners = new List<EventListener>();
                 }
 
-                BuildEventListener(eventListenerAttribute, type);
+                if (_commandListeners == null)
+                {
+                    _commandListeners = new List<CommandListener>();
+                }
+
+                if (eventListenerAttribute != null)
+                {
+                    BuildEventListener(eventListenerAttribute, type);
+                }
+
+                if (commandListenerAttribute != null)
+                {
+                    BuildCommandListener(type);
+                }
             }
 
             return this;
@@ -134,6 +150,38 @@
             return this;
         }
 
+        /// <summary>
+        ///     Builds a CommandListener class based on the class type
+        /// </summary>
+        /// <param name="classType"></param>
+        private void BuildCommandListener(Type classType)
+        {
+            var methods = classType.GetMethods();
+
+            foreach (MethodInfo methodInfo in methods)
+            {
+                var commandAttribute = methodInfo.GetCustomAttribute<CommandAttribute>();
+                if (commandAttribute == null)
+                {
+                    continue;
+                }
+
+                ParameterInfo firstParam = GetParameterInfo(methodInfo);
+                Type returnType = methodInfo.ReturnType;
+
+                var methodCommandInfo = new MethodCommandInfo(classType, methodInfo, firstParam, returnType
+                      , commandAttribute.Queuename);
+                var commandListener = new CommandListener(methodCommandInfo);
+
+                _commandListeners.Add(commandListener);
+            }
+        }
+
+        /// <summary>
+        ///     Build a EventListener class based on the attribute and the class type
+        /// </summary>
+        /// <param name="eventListenerAttribute"></param>
+        /// <param name="classType"></param>
         private void BuildEventListener(EventListenerAttribute eventListenerAttribute, Type classType)
         {
             EventListener queueExists = _eventListeners.FirstOrDefault(el =>
@@ -155,8 +203,16 @@
             }
         }
 
-        private static void BuildMethodTopic(Type classType, EventListener eventListener, MethodInfo methodInfo
-                                           , TopicAttribute topicAttribute, ParameterInfo firstParam)
+        /// <summary>
+        ///     Builds the methodTopic
+        /// </summary>
+        /// <param name="classType"></param>
+        /// <param name="eventListener"></param>
+        /// <param name="methodInfo"></param>
+        /// <param name="topicAttribute"></param>
+        /// <param name="firstParam"></param>
+        private void BuildMethodTopic(Type classType, EventListener eventListener, MethodInfo methodInfo
+                                    , TopicAttribute topicAttribute, ParameterInfo firstParam)
         {
             bool hasDefaultConstructor = classType.GetConstructor(Type.EmptyTypes) != null;
 
@@ -176,6 +232,11 @@
             }
         }
 
+        /// <summary>
+        ///     Builds all methodtopics based on the topics
+        /// </summary>
+        /// <param name="classType"></param>
+        /// <param name="eventListener"></param>
         private void BuildTopics(Type classType, EventListener eventListener)
         {
             var methods = classType.GetMethods();
@@ -184,38 +245,40 @@
                 eventListener.Topics = new Dictionary<TopicAttribute, List<MethodTopicInfo>>();
             }
 
-            if (_commandListeners == null)
-            {
-                _commandListeners = new List<CommandListener>();
-            }
 
             foreach (MethodInfo methodInfo in methods)
             {
                 var topicAttributes = methodInfo.GetCustomAttributes<TopicAttribute>().ToList();
-                var commandAttribute = methodInfo.GetCustomAttribute<CommandAttribute>();
-
-                var methodParams = methodInfo.GetParameters();
-                if (methodParams.Length > 1 && (topicAttributes.Count > 0 || commandAttribute != null))
+                if (topicAttributes.Count == 0)
                 {
-                    throw new InvalidOperationException(
-                            "Method " + methodInfo.Name + " has multiple parameters, this is not allowed.");
+                    continue;
                 }
 
-                ParameterInfo firstParam = methodParams.Length == 0 ? null : methodParams[0];
-                Type returntype = methodInfo.ReturnType;
+                ParameterInfo firstParam = GetParameterInfo(methodInfo);
                 foreach (TopicAttribute topicAttribute in topicAttributes)
                 {
                     BuildMethodTopic(classType, eventListener, methodInfo, topicAttribute, firstParam);
                 }
-
-                if (commandAttribute != null)
-                {
-                    var methodCommandInfo = new MethodCommandInfo(classType, methodInfo, firstParam, returntype
-                          , commandAttribute.Queuename);
-                    var commandListener = new CommandListener(methodCommandInfo);
-                    _commandListeners.Add(commandListener);
-                }
             }
+        }
+
+        /// <summary>
+        ///     Gets the paremeterInfo from a method
+        /// </summary>
+        /// <param name="methodInfo"></param>
+        /// <returns></returns>
+        private ParameterInfo GetParameterInfo(MethodInfo methodInfo)
+        {
+            var methodParams = methodInfo.GetParameters();
+            if (methodParams.Length > 1)
+            {
+                throw new InvalidOperationException("Method "
+                                                    + methodInfo.Name
+                                                    + " has multiple parameters, this is not allowed.");
+            }
+
+            ParameterInfo firstParam = methodParams.Length == 0 ? null : methodParams[0];
+            return firstParam;
         }
     }
 }

@@ -6,6 +6,7 @@
     using System.Reflection;
     using System.Text.RegularExpressions;
     using System.Threading.Tasks;
+    using Attributes;
     using Newtonsoft.Json;
 
     public class EventListener : IDisposable

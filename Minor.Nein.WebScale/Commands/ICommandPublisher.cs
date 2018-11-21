@@ -6,6 +6,6 @@
     public interface ICommandPublisher : IDisposable
     {
         string QueueName { get; set; }
-        Task<object> Publish(DomainCommand domainCommand);
+        Task<T> Publish<T>(DomainCommand domainCommand);
     }
 }

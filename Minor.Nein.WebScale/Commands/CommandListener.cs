@@ -41,8 +41,7 @@
                                                                                    param
                                                                            });
             string resultJson = JsonConvert.SerializeObject(result);
-            return new CommandMessage(resultJson, _methodCommandInfo.MethodReturnType.ToString()
-                  , commandMessage.CorrelationId);
+            return new CommandMessage(resultJson, _methodCommandInfo.MethodReturnType, commandMessage.CorrelationId);
         }
 
         public void Dispose()

@@ -18,7 +18,7 @@
             //192.168.99.100
             RabbitMQContextBuilder connectionBuilder = new RabbitMQContextBuilder()
                                                        .WithExchange("MVM.EventExchange")
-                                                       .WithAddress("192.168.99.100", 5672)
+                                                       .WithAddress("localhost", 5672)
                                                        .WithCredentials("guest", "guest");
 
 
@@ -61,7 +61,7 @@
                                       i = 100
                               };
 
-            object result = await commandPublisher.Publish(testcommand);
+            object result = await commandPublisher.Publish<int>(testcommand);
             Console.WriteLine("result:" + result);
         }
     }
