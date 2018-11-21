@@ -187,20 +187,6 @@
         }
 
         [TestMethod]
-        public void CreateContext_WithExchangeNameEmptyString_ThrowsArgumentException()
-        {
-            // Arrange
-            RabbitMQContextBuilder contextBuilder = new RabbitMQContextBuilder().WithAddress("", 5672);
-
-            // Act & Assert
-            var exception = Assert.ThrowsException<ArgumentException>(() =>
-            {
-                contextBuilder.CreateContext();
-            });
-            Assert.AreEqual(nameof(contextBuilder.HostName) + " was empty", exception.Message);
-        }
-
-        [TestMethod]
         public void CreateContext_WithNegativePort_ThrowsArgumentOutOfRangeException()
         {
             // Arrange
