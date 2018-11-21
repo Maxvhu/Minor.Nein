@@ -76,17 +76,17 @@
 
         public RabbitMQContextBuilder ReadFromEnvironmentVariables()
         {
-            if (TryGetFromEnvironmentVariable("ExchangeName", out string exchangeName))
+            if (TryGetFromEnvironmentVariable("EXCHANGENAME", out string exchangeName))
             {
                 ExchangeName = exchangeName;
             }
 
-            if (TryGetFromEnvironmentVariable("HostName", out string hostName))
+            if (TryGetFromEnvironmentVariable("HOSTNAME", out string hostName))
             {
                 HostName = hostName;
             }
 
-            if (TryGetFromEnvironmentVariable("Port", out string portString))
+            if (TryGetFromEnvironmentVariable("PORT", out string portString))
             {
                 try
                 {
@@ -98,12 +98,12 @@
                 }
             }
 
-            if (TryGetFromEnvironmentVariable("UserName", out string userName))
+            if (TryGetFromEnvironmentVariable("USERNAME", out string userName))
             {
                 UserName = userName;
             }
 
-            if (TryGetFromEnvironmentVariable("Password", out string password))
+            if (TryGetFromEnvironmentVariable("PASSWORD", out string password))
             {
                 _password = password;
             }
